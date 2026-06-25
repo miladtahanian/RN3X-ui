@@ -37,7 +37,11 @@
 
 ### 📸 Screenshots
 
-> _Screenshots coming soon_
+<div align="center">
+  <img src="./images/1.jpg" width="200" alt="Screenshot 1">
+  <img src="./images/2.jpg" width="200" alt="Screenshot 2">
+  <img src="./images/3.jpg" width="200" alt="Screenshot 3">
+</div>
 
 ### 🚀 Getting Started
 
@@ -120,7 +124,11 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 ### 📸 تصاویر
 
-> _به زودی اضافه می‌شود_
+<div align="center">
+  <img src="./images/1.jpg" width="200" alt="تصویر ۱">
+  <img src="./images/2.jpg" width="200" alt="تصویر ۲">
+  <img src="./images/3.jpg" width="200" alt="تصویر ۳">
+</div>
 
 ### 🚀 شروع به کار
 
