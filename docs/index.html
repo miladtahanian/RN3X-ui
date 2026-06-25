@@ -42,6 +42,10 @@
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
 
+    .fa, html[dir="rtl"] body, html[data-lang="fa"] body {
+      font-family: 'Vazirmatn', 'Inter', -apple-system, sans-serif;
+    }
+
     nav {
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -69,7 +73,7 @@
     .nav-logo img { width: 28px; height: 28px; border-radius: 7px; }
 
     .nav-links { display: flex; align-items: center; gap: 20px; list-style: none; }
-    .nav-links a { text-decoration: none; color: var(--text-secondary); font-size: 13px; font-weight: 500; transition: color 0.2s; }
+    .nav-links a { text-decoration: none; color: var(--text-secondary); font-size: 13px; font-weight: 500; transition: color .2s; }
     .nav-links a:hover { color: var(--text-primary); }
 
     .lang-toggle {
@@ -81,7 +85,7 @@
       cursor: pointer;
       font-size: 13px;
       font-weight: 500;
-      transition: all 0.2s;
+      transition: all .2s;
       font-family: inherit;
       white-space: nowrap;
     }
@@ -112,14 +116,14 @@
     .hero-badge {
       display: inline-block;
       padding: 6px 16px;
-      background: rgba(108, 92, 231, 0.12);
-      border: 1px solid rgba(108, 92, 231, 0.25);
+      background: rgba(108, 92, 231, .12);
+      border: 1px solid rgba(108, 92, 231, .25);
       border-radius: 100px;
       font-size: 13px;
       font-weight: 500;
       color: var(--accent-light);
       margin-bottom: 24px;
-      letter-spacing: 0.3px;
+      letter-spacing: .3px;
     }
 
     .hero-icon {
@@ -165,7 +169,7 @@
       font-size: 15px;
       font-weight: 600;
       text-decoration: none;
-      transition: all 0.25s;
+      transition: all .25s;
       cursor: pointer;
       border: none;
       font-family: inherit;
@@ -173,7 +177,6 @@
 
     .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 24px var(--accent-glow); }
     .btn-primary:hover { background: #7c6cf0; transform: translateY(-2px); box-shadow: 0 8px 32px var(--accent-glow); }
-
     .btn-secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); }
     .btn-secondary:hover { background: var(--bg-card-hover); border-color: var(--accent); transform: translateY(-2px); }
 
@@ -191,17 +194,32 @@
     section { padding: 80px 24px; max-width: 1200px; margin: 0 auto; }
 
     .section-header { text-align: center; margin-bottom: 48px; }
-    .section-header h2 { font-size: clamp(26px, 3.5vw, 38px); font-weight: 700; margin-bottom: 8px; }
-    .section-header p { color: var(--text-secondary); font-size: 15px; max-width: 500px; margin: 0 auto; }
 
-    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .section-header h2 {
+      font-size: clamp(28px, 3.5vw, 40px);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .section-header p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
 
     .feature-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 28px;
-      transition: all 0.3s;
+      transition: all .3s;
       position: relative;
       overflow: hidden;
     }
@@ -213,11 +231,11 @@
       height: 3px;
       background: linear-gradient(90deg, var(--accent), var(--accent-light));
       opacity: 0;
-      transition: opacity 0.3s;
+      transition: opacity .3s;
     }
 
     .feature-card:hover::before { opacity: 1; }
-    .feature-card:hover { background: var(--bg-card-hover); border-color: rgba(108, 92, 231, 0.3); transform: translateY(-4px); }
+    .feature-card:hover { background: var(--bg-card-hover); border-color: rgba(108,92,231,.3); transform: translateY(-4px); }
 
     .feature-icon {
       width: 44px; height: 44px;
@@ -227,17 +245,57 @@
       justify-content: center;
       font-size: 22px;
       margin-bottom: 16px;
-      background: rgba(108, 92, 231, 0.12);
+      background: rgba(108,92,231,.12);
     }
 
     .feature-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
     .feature-card p { color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
 
-    .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
-    .tech-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px 24px; text-align: center; transition: all 0.2s; }
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .tech-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 20px 24px;
+      text-align: center;
+      transition: all .2s;
+    }
+
     .tech-item:hover { border-color: var(--accent); transform: translateY(-2px); }
     .tech-item h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
     .tech-item p { font-size: 12px; color: var(--text-secondary); }
+
+    .screenshots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .screenshot-item {
+      text-align: center;
+    }
+
+    .screenshot-item img {
+      width: 100%;
+      max-width: 200px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 32px rgba(0,0,0,.4);
+      transition: all .3s;
+    }
+
+    .screenshot-item img:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 48px rgba(0,0,0,.5);
+      border-color: var(--accent);
+    }
 
     .download-section {
       text-align: center;
@@ -254,7 +312,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(108, 92, 231, 0.08) 0%, transparent 60%);
+      background: radial-gradient(ellipse at 50% 0%, rgba(108,92,231,.08) 0%, transparent 60%);
       pointer-events: none;
     }
 
@@ -269,10 +327,6 @@
     footer { text-align: center; padding: 40px 24px; border-top: 1px solid var(--border); color: var(--text-secondary); font-size: 13px; }
     footer a { color: var(--accent-light); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
-
-    .fa { font-family: 'Vazirmatn', 'Inter', -apple-system, sans-serif; }
-
-    html[dir="rtl"] body { font-family: 'Vazirmatn', 'Inter', -apple-system, sans-serif; }
 
     .fa { display: none; }
     .en { display: inline; }
@@ -294,10 +348,12 @@
       .hero-buttons { flex-direction: column; align-items: center; }
       .btn { width: 100%; max-width: 300px; justify-content: center; }
       .download-section { padding: 40px 20px; }
+      .screenshots-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
     }
 
     @media (max-width: 480px) {
       .features-grid { grid-template-columns: 1fr; }
+      .screenshots-grid { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
@@ -310,6 +366,7 @@
     </a>
     <ul class="nav-links">
       <li><a href="#features" class="fa">ویژگی‌ها</a><a href="#features" class="en">Features</a></li>
+      <li><a href="#screenshots" class="fa">تصاویر</a><a href="#screenshots" class="en">Screenshots</a></li>
       <li><a href="#tech" class="fa">تکنولوژی</a><a href="#tech" class="en">Tech</a></li>
       <li><a href="#download" class="fa">دانلود</a><a href="#download" class="en">Download</a></li>
       <li>
@@ -420,6 +477,29 @@
         <p class="en">Modern, eye-friendly dark UI with smooth animations and a carefully designed color palette.</p>
       </div>
 
+    </div>
+  </section>
+
+  <section id="screenshots">
+    <div class="section-header">
+      <h2 class="fa">📸 تصاویر برنامه</h2>
+      <h2 class="en">📸 Screenshots</h2>
+      <p class="fa">نمایی از رابط کاربری RN3X-ui</p>
+      <p class="en">A glimpse of the RN3X-ui interface</p>
+    </div>
+    <div class="screenshots-grid">
+      <div class="screenshot-item">
+        <img src="images/1.jpg" alt="Screenshot 1" loading="lazy">
+      </div>
+      <div class="screenshot-item">
+        <img src="images/2.jpg" alt="Screenshot 2" loading="lazy">
+      </div>
+      <div class="screenshot-item">
+        <img src="images/3.jpg" alt="Screenshot 3" loading="lazy">
+      </div>
+      <div class="screenshot-item">
+        <img src="images/4.jpg" alt="Screenshot 4" loading="lazy">
+      </div>
     </div>
   </section>
 
