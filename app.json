@@ -10,6 +10,8 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "ir.tahanian.rnpanel",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
