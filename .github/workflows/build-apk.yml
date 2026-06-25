@@ -8,8 +8,7 @@ jobs:
     name: Build Android APK
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -17,23 +16,26 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Setup EAS
-        uses: expo/expo-github-action@v8
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          expo-version: latest
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Prebuild for Android
+        run: npx expo prebuild --platform android --no-install
+
       - name: Build APK
-        run: eas build --platform android --profile production --non-interactive
+        run: cd android && ./gradlew assembleRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: rn3x-ui-apk
-          path: |
-            *.apk
-            build/**/*.apk
+          path: android/app/build/outputs/apk/release/*.apk
