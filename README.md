@@ -41,6 +41,7 @@
   <img src="./images/1.jpg" width="200" alt="Screenshot 1">
   <img src="./images/2.jpg" width="200" alt="Screenshot 2">
   <img src="./images/3.jpg" width="200" alt="Screenshot 3">
+  <img src="./images/4.jpg" width="200" alt="Screenshot 4">
 </div>
 
 ### 🚀 Getting Started
@@ -128,6 +129,7 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
   <img src="./images/1.jpg" width="200" alt="تصویر ۱">
   <img src="./images/2.jpg" width="200" alt="تصویر ۲">
   <img src="./images/3.jpg" width="200" alt="تصویر ۳">
+  <img src="./images/4.jpg" width="200" alt="تصویر 4">
 </div>
 
 ### 🚀 شروع به کار

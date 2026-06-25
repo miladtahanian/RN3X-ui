@@ -42,4 +42,16 @@ export const serverApi = {
     const response = await api.get('/panel/api/server/xrayMetricsState');
     return response.data;
   },
+
+  async restartXray() {
+    const api = getApiClient();
+    const response = await api.post('/panel/api/server/restartXrayService');
+    return response.data;
+  },
+
+  async getXrayVersion() {
+    const api = getApiClient();
+    const response = await api.get('/panel/api/server/getXrayVersion');
+    return response.data;
+  },
 };

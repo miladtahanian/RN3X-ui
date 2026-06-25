@@ -9,12 +9,28 @@ import {
   Alert,
   Animated,
   Linking,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { settingsApi } from '../api/settings';
+import { serverApi } from '../api/server';
 import { colors, spacing } from '../utils/colors';
 import { LANGUAGES } from '../utils/i18n';
+
+const APP_VERSION = '1.0.3';
+const GITHUB_REPO = 'miladtahanian/RN3X-ui';
+
+function formatBytes(bytes) {
+  if (!bytes || bytes === 0) return '0 B';
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  const value = bytes / Math.pow(1024, i);
+  return (i >= 3 ? value.toFixed(2) : value.toFixed(1)) + ' ' + sizes[i];
+}
 
 function AnimatedSection({ children, delay = 0, style }) {
   const opacity = useRef(new Animated.Value(0)).current;
@@ -34,11 +50,49 @@ function AnimatedSection({ children, delay = 0, style }) {
   );
 }
 
+function InfoRow({ label, value, valueColor }) {
+  if (value == null) return null;
+  return (
+    <View style={styles.infoRow}>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text style={[styles.infoValue, valueColor && { color: valueColor }]} numberOfLines={1}>{String(value)}</Text>
+    </View>
+  );
+}
+
+function ActionButton({ icon, label, onPress, color }) {
+  return (
+    <TouchableOpacity style={[styles.actionBtn, color && { borderColor: color + '40' }]} onPress={onPress} activeOpacity={0.7}>
+      {icon && <Text style={[styles.actionBtnIcon, color && { color }]}>{icon}</Text>}
+      <Text style={[styles.actionBtnText, color && { color }]}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+function SectionTitle({ label }) {
+  return <Text style={styles.sectionTitle}>{label}</Text>;
+}
+
+function InfoCard({ children, style }) {
+  return <View style={[styles.infoCard, style]}>{children}</View>;
+}
+
 export default function SettingsScreen() {
   const { username, logout, serverUrl } = useAuth();
   const { t, locale, changeLanguage } = useLanguage();
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState(null);
+
+  const [adminModal, setAdminModal] = useState(false);
+  const [adminOldUser, setAdminOldUser] = useState('');
+  const [adminOldPass, setAdminOldPass] = useState('');
+  const [adminNewUser, setAdminNewUser] = useState('');
+  const [adminNewPass, setAdminNewPass] = useState('');
+  const [adminUpdating, setAdminUpdating] = useState(false);
+  const [showServer, setShowServer] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -62,26 +116,111 @@ export default function SettingsScreen() {
     ]);
   };
 
-  const handleRestartPanel = () => {
-    Alert.alert(t('settings.restartTitle'), t('settings.restartMsg'), [
+  const handleConfirm = (title, msg, onConfirm) => {
+    Alert.alert(title, msg, [
       { text: t('settings.cancel'), style: 'cancel' },
-      {
-        text: t('settings.restartConfirm'),
-        onPress: async () => {
-          try {
-            await settingsApi.restartPanel();
-            Alert.alert(t('settings.success'), t('settings.restartSuccess'));
-          } catch (e) {
-            Alert.alert(t('settings.error'), t('settings.restartError'));
-          }
-        },
-      },
+      { text: t('settings.logoutConfirm'), onPress: onConfirm },
     ]);
+  };
+
+  const handleRestartPanel = () => {
+    handleConfirm(t('settings.restartTitle'), t('settings.restartMsg'), async () => {
+      try {
+        await settingsApi.restartPanel();
+        Alert.alert(t('settings.success'), t('settings.restartSuccess'));
+      } catch (e) {
+        Alert.alert(t('settings.error'), t('settings.restartError'));
+      }
+    });
+  };
+
+  const handleRestartXray = () => {
+    handleConfirm(t('settings.restartXrayTitle'), t('settings.restartXrayMsg'), async () => {
+      try {
+        await serverApi.restartXray();
+        Alert.alert(t('settings.success'), t('settings.restartXraySuccess'));
+      } catch (e) {
+        Alert.alert(t('settings.error'), t('settings.restartXrayError'));
+      }
+    });
+  };
+
+  const handleTestTgBot = async () => {
+    try {
+      const res = await settingsApi.testTgBot();
+      Alert.alert(t('settings.success'), res.msg || t('settings.operationSuccess'));
+    } catch (e) {
+      Alert.alert(t('settings.error'), t('settings.operationError'));
+    }
+  };
+
+  const handleTestSmtp = async () => {
+    try {
+      const res = await settingsApi.testSmtp();
+      Alert.alert(t('settings.success'), res.msg || t('settings.operationSuccess'));
+    } catch (e) {
+      Alert.alert(t('settings.error'), t('settings.operationError'));
+    }
+  };
+
+  const handleUpdateAdmin = async () => {
+    if (!adminOldUser || !adminOldPass || !adminNewUser || !adminNewPass) {
+      Alert.alert(t('settings.error'), t('login.fillFields'));
+      return;
+    }
+    setAdminUpdating(true);
+    try {
+      await settingsApi.updateUser({
+        oldUsername: adminOldUser,
+        oldPassword: adminOldPass,
+        newUsername: adminNewUser,
+        newPassword: adminNewPass,
+      });
+      Alert.alert(t('settings.success'), t('settings.updateAdminSuccess'));
+      setAdminModal(false);
+      setAdminOldUser('');
+      setAdminOldPass('');
+      setAdminNewUser('');
+      setAdminNewPass('');
+    } catch (e) {
+      Alert.alert(t('settings.error'), t('settings.updateAdminError'));
+    } finally {
+      setAdminUpdating(false);
+    }
+  };
+
+  const handleCheckUpdate = async () => {
+    setCheckingUpdate(true);
+    setUpdateInfo(null);
+    try {
+      const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
+        headers: { Accept: 'application/vnd.github.v3+json' },
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const latestTag = (data.tag_name || '').replace(/^v/i, '');
+      const currentTag = APP_VERSION.replace(/^v/i, '');
+      const hasUpdate = latestTag.localeCompare(currentTag, undefined, { numeric: true }) > 0;
+      setUpdateInfo({
+        latestVersion: data.tag_name,
+        hasUpdate,
+        downloadUrl: data.html_url,
+        assets: data.assets || [],
+        publishedAt: data.published_at,
+      });
+    } catch (e) {
+      Alert.alert(t('settings.error'), t('settings.checkFailed'));
+    } finally {
+      setCheckingUpdate(false);
+    }
   };
 
   const handleLanguageChange = (code) => {
     changeLanguage(code);
   };
+
+  const s = (key) => t('settings.' + key);
+  const yesNo = (val) => val ? s('enabled') : s('disabled');
 
   if (loading) {
     return (
@@ -94,7 +233,7 @@ export default function SettingsScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <AnimatedSection delay={0}>
-        <Text style={styles.sectionTitle}>{t('settings.language')}</Text>
+        <SectionTitle label={s('language')} />
         <View style={styles.langRow}>
           {LANGUAGES.map((lang) => (
             <TouchableOpacity
@@ -112,83 +251,212 @@ export default function SettingsScreen() {
       </AnimatedSection>
 
       <AnimatedSection delay={100}>
-        <Text style={styles.sectionTitle}>{t('settings.connectionInfo')}</Text>
-        <View style={styles.infoCard}>
+        <SectionTitle label={s('connectionInfo')} />
+        <InfoCard>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>{t('settings.server')}</Text>
-            <Text style={styles.infoValue} numberOfLines={1}>{serverUrl}</Text>
+            <Text style={styles.infoLabel}>{s('server')}</Text>
+            <View style={styles.serverValueRow}>
+              <Text style={[styles.infoValue, !showServer && styles.infoValueHidden]} numberOfLines={1}>
+                {showServer ? serverUrl : serverUrl ? serverUrl.slice(0, 8) + '...' : ''}
+              </Text>
+              <TouchableOpacity onPress={() => setShowServer(!showServer)} style={styles.eyeBtn} activeOpacity={0.6}>
+                <Text style={styles.eyeIcon}>{showServer ? '\uD83D\uDC41' : '\uD83D\uDC41\u200D\uD83D\uDDE8'}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>{t('settings.username')}</Text>
-            <Text style={styles.infoValue}>{username}</Text>
-          </View>
-        </View>
+          <InfoRow label={s('username')} value={username} />
+          <InfoRow label={s('currentVersion')} value={'v' + APP_VERSION} />
+        </InfoCard>
       </AnimatedSection>
 
       {settings && (
-        <AnimatedSection delay={200}>
-          <Text style={styles.sectionTitle}>{t('settings.panelSettings')}</Text>
-          <View style={styles.infoCard}>
-            {settings.pageSize != null && (
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>{t('settings.pageSize')}</Text>
-                <Text style={styles.infoValue}>{settings.pageSize}</Text>
-              </View>
-            )}
-            {settings.expireDiff != null && (
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>{t('settings.expiryWarning')}</Text>
-                <Text style={styles.infoValue}>{settings.expireDiff}</Text>
-              </View>
-            )}
-            {settings.datepicker && (
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>{t('settings.dateFormat')}</Text>
-                <Text style={styles.infoValue}>{settings.datepicker}</Text>
-              </View>
-            )}
-          </View>
-        </AnimatedSection>
+        <>
+          <AnimatedSection delay={150}>
+            <SectionTitle label={s('panelSettings')} />
+            <InfoCard>
+              <InfoRow label={s('pageSize')} value={settings.pageSize} />
+              <InfoRow label={s('expiryWarning')} value={settings.expireDiff != null ? settings.expireDiff + ' ' + t('dashboard.d') : null} />
+              <InfoRow label={s('dateFormat')} value={settings.datepicker} />
+              <InfoRow label={s('trafficDiff')} value={settings.trafficDiff != null ? formatBytes(settings.trafficDiff) : null} />
+            </InfoCard>
+          </AnimatedSection>
+
+          <AnimatedSection delay={200}>
+            <SectionTitle label={s('webSettings')} />
+            <InfoCard>
+              <InfoRow label={s('webPort')} value={settings.webPort} />
+              <InfoRow label={s('webDomain')} value={settings.webDomain} />
+              <InfoRow label={s('webBasePath')} value={settings.webBasePath} />
+              <InfoRow label={s('webCertFile')} value={settings.webCertFile || (settings.webKeyFile ? s('enabled') : null)} />
+            </InfoCard>
+          </AnimatedSection>
+
+          <AnimatedSection delay={250}>
+            <SectionTitle label={s('securitySettings')} />
+            <InfoCard>
+              <InfoRow label={s('sessionMaxAge')} value={settings.sessionMaxAge != null ? settings.sessionMaxAge + 's' : null} />
+              <InfoRow label={s('twoFactorAuth')} value={yesNo(settings.twoFactorEnable)} valueColor={settings.twoFactorEnable ? colors.success : colors.textMuted} />
+            </InfoCard>
+          </AnimatedSection>
+
+          {settings.tgBotEnable && (
+            <AnimatedSection delay={300}>
+              <SectionTitle label={s('tgBot')} />
+              <InfoCard>
+                <InfoRow label={s('tgBotStatus')} value={yesNo(settings.tgBotEnable)} valueColor={settings.tgBotEnable ? colors.success : colors.textMuted} />
+                <InfoRow label={s('tgBotToken')} value={settings.tgBotToken ? settings.tgBotToken.slice(0, 10) + '...' : '-'} />
+                <InfoRow label={s('tgBotChatId')} value={settings.tgBotChatId} />
+              </InfoCard>
+            </AnimatedSection>
+          )}
+
+          {settings.subEnable && (
+            <AnimatedSection delay={350}>
+              <SectionTitle label={s('subSettings')} />
+              <InfoCard>
+                <InfoRow label={s('subEnable')} value={yesNo(settings.subEnable)} valueColor={settings.subEnable ? colors.success : colors.textMuted} />
+                <InfoRow label={s('subPort')} value={settings.subPort} />
+                <InfoRow label={s('subPath')} value={settings.subPath} />
+                <InfoRow label={s('subURI')} value={settings.subURI} />
+                <InfoRow label={s('subTitle')} value={settings.subTitle} />
+              </InfoCard>
+            </AnimatedSection>
+          )}
+        </>
       )}
 
-      <AnimatedSection delay={300}>
-        <Text style={styles.sectionTitle}>{t('settings.operations')}</Text>
-        <TouchableOpacity style={styles.actionBtn} onPress={handleRestartPanel} activeOpacity={0.7}>
-          <Text style={styles.actionBtnIcon}>{'\u21BB'}</Text>
-          <Text style={styles.actionBtnText}>{t('settings.restartPanel')}</Text>
-        </TouchableOpacity>
+      <AnimatedSection delay={400}>
+        <SectionTitle label={s('operations')} />
+        <ActionButton icon={'\u21BB'} label={s('restartPanel')} onPress={handleRestartPanel} />
+        <ActionButton icon={'\u26A1'} label={s('restartXray')} onPress={handleRestartXray} />
+        {settings?.tgBotEnable && (
+          <ActionButton icon={'\uD83D\uDCE8'} label={s('testTgBot')} onPress={handleTestTgBot} />
+        )}
+        {settings?.smtpEnable && (
+          <ActionButton icon={'\u2709\uFE0F'} label={s('testSmtp')} onPress={handleTestSmtp} />
+        )}
+        <ActionButton icon={'\uD83D\uDD11'} label={s('updateAdmin')} onPress={() => setAdminModal(true)} />
       </AnimatedSection>
 
-      <AnimatedSection delay={350}>
-        <Text style={styles.sectionTitle}>{t('settings.developer')}</Text>
-        <View style={styles.infoCard}>
-          <Text style={styles.aboutText}>{t('settings.developerDesc')}</Text>
-          <TouchableOpacity style={styles.linkRow} onPress={() => Linking.openURL('https://github.com/miladtahanian')}>
-            <Text style={styles.linkIcon}>{'\uD83D\uDCC1'}</Text>
-            <Text style={styles.linkText}>{t('settings.github')}</Text>
+      <AnimatedSection delay={450}>
+        <SectionTitle label={s('versionCheck')} />
+        <InfoCard>
+          <InfoRow label={s('currentVersion')} value={'v' + APP_VERSION} />
+          {updateInfo && (
+            <InfoRow
+              label={s('latestVersion')}
+              value={updateInfo.latestVersion}
+              valueColor={updateInfo.hasUpdate ? colors.warning : colors.success}
+            />
+          )}
+          {updateInfo?.hasUpdate && (
+            <TouchableOpacity
+              style={styles.downloadBtn}
+              onPress={() => Linking.openURL(updateInfo.downloadUrl)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.downloadBtnText}>{s('download')} {updateInfo.latestVersion}</Text>
+            </TouchableOpacity>
+          )}
+          {updateInfo && !updateInfo.hasUpdate && (
+            <Text style={styles.updateStatus}>{s('upToDate')}</Text>
+          )}
+          <TouchableOpacity
+            style={[styles.checkBtn, checkingUpdate && styles.checkBtnDisabled]}
+            onPress={handleCheckUpdate}
+            disabled={checkingUpdate}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.checkBtnText}>
+              {checkingUpdate ? s('checking') : (updateInfo ? s('checkUpdate') : s('checkUpdate'))}
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.linkRow} onPress={() => Linking.openURL('https://t.me/miladtahanian')}>
-            <Text style={styles.linkIcon}>{'\uD83D\uDCE8'}</Text>
-            <Text style={styles.linkText}>{t('settings.telegram')}</Text>
+        </InfoCard>
+      </AnimatedSection>
+
+      <AnimatedSection delay={500}>
+        <SectionTitle label={s('developer')} />
+        <InfoCard>
+          <Text style={styles.aboutText}>{s('developerDesc')}</Text>
+          <TouchableOpacity style={styles.linkRow} onPress={() => Linking.openURL('https://github.com/miladtahanian/RN3X-ui')}>
+            <Text style={styles.linkIcon}>{'\uD83D\uDCC1'}</Text>
+            <Text style={styles.linkText}>{s('sourceCode')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.linkRow} onPress={() => Linking.openURL('https://github.com/miladtahanian')}>
+            <Text style={styles.linkIcon}>{'\uD83D\uDCBB'}</Text>
+            <Text style={styles.linkText}>{s('github')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.linkRow, { borderBottomWidth: 0 }]} onPress={() => Linking.openURL('mailto:miladtahanianofficial@gmail.com')}>
             <Text style={styles.linkIcon}>{'\u2709\uFE0F'}</Text>
-            <Text style={styles.linkText}>{t('settings.email')}</Text>
+            <Text style={styles.linkText}>{s('email')}</Text>
           </TouchableOpacity>
-        </View>
+        </InfoCard>
       </AnimatedSection>
 
-      <AnimatedSection delay={400}>
+      <AnimatedSection delay={550}>
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.8}>
           <Text style={styles.logoutBtnIcon}>{'\u21AA'}</Text>
-          <Text style={styles.logoutBtnText}>{t('settings.logout')}</Text>
+          <Text style={styles.logoutBtnText}>{s('logout')}</Text>
         </TouchableOpacity>
       </AnimatedSection>
 
-      <AnimatedSection delay={450} style={styles.footer}>
+      <AnimatedSection delay={600} style={styles.footer}>
         <Text style={styles.footerText}>{t('app.version')}</Text>
         <Text style={styles.footerText}>{t('app.desc')}</Text>
       </AnimatedSection>
+
+      <Modal visible={adminModal} transparent animationType="fade" onRequestClose={() => setAdminModal(false)}>
+        <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{s('updateAdminTitle')}</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder={s('updateAdminOldUser')}
+              placeholderTextColor={colors.textMuted}
+              value={adminOldUser}
+              onChangeText={setAdminOldUser}
+              autoCapitalize="none"
+            />
+            <TextInput
+              style={styles.modalInput}
+              placeholder={s('updateAdminOldPass')}
+              placeholderTextColor={colors.textMuted}
+              value={adminOldPass}
+              onChangeText={setAdminOldPass}
+              secureTextEntry
+            />
+            <TextInput
+              style={styles.modalInput}
+              placeholder={s('updateAdminNewUser')}
+              placeholderTextColor={colors.textMuted}
+              value={adminNewUser}
+              onChangeText={setAdminNewUser}
+              autoCapitalize="none"
+            />
+            <TextInput
+              style={styles.modalInput}
+              placeholder={s('updateAdminNewPass')}
+              placeholderTextColor={colors.textMuted}
+              value={adminNewPass}
+              onChangeText={setAdminNewPass}
+              secureTextEntry
+            />
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setAdminModal(false)} activeOpacity={0.7}>
+                <Text style={styles.modalCancelText}>{s('cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalConfirmBtn, adminUpdating && styles.checkBtnDisabled]}
+                onPress={handleUpdateAdmin}
+                disabled={adminUpdating}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.modalConfirmText}>{adminUpdating ? s('checking') : s('updateAdminBtn')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </ScrollView>
   );
 }
@@ -258,19 +526,36 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     color: colors.textSecondary,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
+    flex: 1,
   },
   infoValue: {
     color: colors.text,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
-    flex: 1,
     textAlign: 'right',
+  },
+  infoValueHidden: {
+    color: colors.textMuted,
+    fontStyle: 'italic',
+    fontWeight: '500',
+  },
+  serverValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  eyeBtn: {
+    padding: 4,
+  },
+  eyeIcon: {
+    fontSize: 16,
   },
   actionBtn: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.card,
     borderRadius: 12,
@@ -283,6 +568,8 @@ const styles = StyleSheet.create({
   actionBtnIcon: {
     fontSize: 18,
     color: colors.text,
+    width: 28,
+    textAlign: 'center',
   },
   actionBtnText: {
     color: colors.text,
@@ -320,8 +607,7 @@ const styles = StyleSheet.create({
   linkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    textAlign:'center',
-    justifyContent:'center',
+    justifyContent: 'center',
     paddingVertical: spacing.sm + 1,
     borderBottomWidth: 1,
     borderBottomColor: colors.border + '50',
@@ -336,10 +622,43 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     flex: 1,
   },
-  linkValue: {
+  downloadBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.md,
+    alignItems: 'center',
+    marginTop: spacing.sm,
+  },
+  downloadBtnText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  updateStatus: {
+    color: colors.success,
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: spacing.sm,
+  },
+  checkBtn: {
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.md,
+    alignItems: 'center',
+    marginTop: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.primary + '50',
+  },
+  checkBtnDisabled: {
+    opacity: 0.6,
+  },
+  checkBtnText: {
     color: colors.primary,
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '700',
   },
   footer: {
     alignItems: 'center',
@@ -349,5 +668,68 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: 12,
     marginTop: spacing.xs,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  modalContent: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: spacing.lg,
+    width: '85%',
+    maxWidth: 400,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.text,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  modalInput: {
+    backgroundColor: colors.background,
+    borderRadius: 10,
+    padding: spacing.md - 2,
+    color: colors.text,
+    fontSize: 14,
+    marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    borderRadius: 10,
+    padding: spacing.md - 2,
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  modalCancelText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  modalConfirmBtn: {
+    flex: 1,
+    borderRadius: 10,
+    padding: spacing.md - 2,
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+  },
+  modalConfirmText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '700',
   },
 });
