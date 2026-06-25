@@ -1,10 +1,10 @@
 ﻿<!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="rtl" data-lang="fa">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RN3X-ui ΓÇö ┌⌐┘ä╪º█î┘å╪¬ ┘à┘ê╪¿╪º█î┘ä ╪¿╪▒╪º█î ┘╛┘å┘ä 3X-UI</title>
-  <meta name="description" content="RN3X-ui █î┌⌐ ┌⌐┘ä╪º█î┘å╪¬ ┘à┘ê╪¿╪º█î┘ä ┘à╪»╪▒┘å ┘ê ╪»┘ê ╪▓╪¿╪º┘å┘ç ╪¿╪▒╪º█î ┘à╪»█î╪▒█î╪¬ ┘╛┘å┘äΓÇî┘ç╪º█î ┘╛╪▒┘ê┌⌐╪│█î 3X-UI ╪º╪│╪¬.">
+  <title>RN3X-ui — کلاینت موبایل برای پنل 3X-UI</title>
+  <meta name="description" content="RN3X-ui یک کلاینت موبایل مدرن و دو زبانه برای مدیریت پنل‌های پروکسی 3X-UI است.">
   <link rel="icon" href="favicon.png">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -42,7 +42,6 @@
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
 
-    /* ΓöÇΓöÇΓöÇ Navbar ΓöÇΓöÇΓöÇ */
     nav {
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -67,27 +66,10 @@
       font-size: 17px;
     }
 
-    .nav-logo img {
-      width: 28px;
-      height: 28px;
-      border-radius: 7px;
-    }
+    .nav-logo img { width: 28px; height: 28px; border-radius: 7px; }
 
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      list-style: none;
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      color: var(--text-secondary);
-      font-size: 13px;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-
+    .nav-links { display: flex; align-items: center; gap: 20px; list-style: none; }
+    .nav-links a { text-decoration: none; color: var(--text-secondary); font-size: 13px; font-weight: 500; transition: color 0.2s; }
     .nav-links a:hover { color: var(--text-primary); }
 
     .lang-toggle {
@@ -104,12 +86,8 @@
       white-space: nowrap;
     }
 
-    .lang-toggle:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--accent);
-    }
+    .lang-toggle:hover { background: var(--bg-card-hover); border-color: var(--accent); }
 
-    /* ΓöÇΓöÇΓöÇ Hero ΓöÇΓöÇΓöÇ */
     .hero {
       min-height: 100vh;
       display: flex;
@@ -125,10 +103,8 @@
     .hero::before {
       content: '';
       position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
       background: radial-gradient(ellipse at 50% 50%, rgba(108, 92, 231, 0.06) 0%, transparent 60%);
       pointer-events: none;
     }
@@ -147,8 +123,7 @@
     }
 
     .hero-icon {
-      width: 100px;
-      height: 100px;
+      width: 100px; height: 100px;
       border-radius: 24px;
       margin-bottom: 28px;
       box-shadow: 0 0 60px var(--accent-glow);
@@ -179,14 +154,8 @@
       margin-bottom: 40px;
     }
 
-    .hero-buttons {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
+    .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
 
-    /* ΓöÇΓöÇΓöÇ Buttons ΓöÇΓöÇΓöÇ */
     .btn {
       display: inline-flex;
       align-items: center;
@@ -202,29 +171,11 @@
       font-family: inherit;
     }
 
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-      box-shadow: 0 4px 24px var(--accent-glow);
-    }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 24px var(--accent-glow); }
+    .btn-primary:hover { background: #7c6cf0; transform: translateY(-2px); box-shadow: 0 8px 32px var(--accent-glow); }
 
-    .btn-primary:hover {
-      background: #7c6cf0;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 32px var(--accent-glow);
-    }
-
-    .btn-secondary {
-      background: var(--bg-card);
-      color: var(--text-primary);
-      border: 1px solid var(--border);
-    }
-
-    .btn-secondary:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--accent);
-      transform: translateY(-2px);
-    }
+    .btn-secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--bg-card-hover); border-color: var(--accent); transform: translateY(-2px); }
 
     .btn-download {
       background: linear-gradient(135deg, #6c5ce7, #a29bfe);
@@ -234,47 +185,16 @@
       font-size: 16px;
     }
 
-    .btn-download:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 40px var(--accent-glow);
-    }
+    .btn-download:hover { transform: translateY(-2px); box-shadow: 0 8px 40px var(--accent-glow); }
+    .btn-download svg { width: 20px; height: 20px; }
 
-    .btn-download svg {
-      width: 20px;
-      height: 20px;
-    }
+    section { padding: 80px 24px; max-width: 1200px; margin: 0 auto; }
 
-    /* ΓöÇΓöÇΓöÇ Section ΓöÇΓöÇΓöÇ */
-    section {
-      padding: 80px 24px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
+    .section-header { text-align: center; margin-bottom: 48px; }
+    .section-header h2 { font-size: clamp(26px, 3.5vw, 38px); font-weight: 700; margin-bottom: 8px; }
+    .section-header p { color: var(--text-secondary); font-size: 15px; max-width: 500px; margin: 0 auto; }
 
-    .section-header {
-      text-align: center;
-      margin-bottom: 48px;
-    }
-
-    .section-header h2 {
-      font-size: clamp(26px, 3.5vw, 38px);
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .section-header p {
-      color: var(--text-secondary);
-      font-size: 15px;
-      max-width: 500px;
-      margin: 0 auto;
-    }
-
-    /* ΓöÇΓöÇΓöÇ Features Grid ΓöÇΓöÇΓöÇ */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-    }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
 
     .feature-card {
       background: var(--bg-card);
@@ -289,9 +209,7 @@
     .feature-card::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 0; left: 0; right: 0;
       height: 3px;
       background: linear-gradient(90deg, var(--accent), var(--accent-light));
       opacity: 0;
@@ -299,16 +217,10 @@
     }
 
     .feature-card:hover::before { opacity: 1; }
-
-    .feature-card:hover {
-      background: var(--bg-card-hover);
-      border-color: rgba(108, 92, 231, 0.3);
-      transform: translateY(-4px);
-    }
+    .feature-card:hover { background: var(--bg-card-hover); border-color: rgba(108, 92, 231, 0.3); transform: translateY(-4px); }
 
     .feature-icon {
-      width: 44px;
-      height: 44px;
+      width: 44px; height: 44px;
       border-radius: 12px;
       display: flex;
       align-items: center;
@@ -318,51 +230,15 @@
       background: rgba(108, 92, 231, 0.12);
     }
 
-    .feature-card h3 {
-      font-size: 17px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
+    .feature-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+    .feature-card p { color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
 
-    .feature-card p {
-      color: var(--text-secondary);
-      font-size: 14px;
-      line-height: 1.6;
-    }
+    .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+    .tech-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 20px 24px; text-align: center; transition: all 0.2s; }
+    .tech-item:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .tech-item h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .tech-item p { font-size: 12px; color: var(--text-secondary); }
 
-    /* ΓöÇΓöÇΓöÇ Tech Stack ΓöÇΓöÇΓöÇ */
-    .tech-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-    }
-
-    .tech-item {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 20px 24px;
-      text-align: center;
-      transition: all 0.2s;
-    }
-
-    .tech-item:hover {
-      border-color: var(--accent);
-      transform: translateY(-2px);
-    }
-
-    .tech-item h4 {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .tech-item p {
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    /* ΓöÇΓöÇΓöÇ Download ΓöÇΓöÇΓöÇ */
     .download-section {
       text-align: center;
       background: var(--bg-secondary);
@@ -382,70 +258,33 @@
       pointer-events: none;
     }
 
-    .download-section h2 {
-      font-size: clamp(24px, 3vw, 36px);
-      font-weight: 700;
-      margin-bottom: 12px;
-    }
+    .download-section h2 { font-size: clamp(24px, 3vw, 36px); font-weight: 700; margin-bottom: 12px; }
+    .download-section > p { color: var(--text-secondary); margin-bottom: 32px; font-size: 15px; }
+    .download-options { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
 
-    .download-section > p {
-      color: var(--text-secondary);
-      margin-bottom: 32px;
-      font-size: 15px;
-    }
-
-    .download-options {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-      position: relative;
-      z-index: 1;
-    }
-
-    .version-tag {
-      display: inline-block;
-      margin-top: 20px;
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-
-    .version-tag a {
-      color: var(--accent-light);
-      text-decoration: none;
-    }
-
+    .version-tag { display: inline-block; margin-top: 20px; font-size: 13px; color: var(--text-secondary); }
+    .version-tag a { color: var(--accent-light); text-decoration: none; }
     .version-tag a:hover { text-decoration: underline; }
 
-    /* ΓöÇΓöÇΓöÇ Footer ΓöÇΓöÇΓöÇ */
-    footer {
-      text-align: center;
-      padding: 40px 24px;
-      border-top: 1px solid var(--border);
-      color: var(--text-secondary);
-      font-size: 13px;
-    }
-
+    footer { text-align: center; padding: 40px 24px; border-top: 1px solid var(--border); color: var(--text-secondary); font-size: 13px; }
     footer a { color: var(--accent-light); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
 
-    /* ΓöÇΓöÇΓöÇ Language Switch ΓöÇΓöÇΓöÇ */
-    html[dir="rtl"] body { font-family: 'Vazirmatn', 'Inter', -apple-system, sans-serif; }
-    html[dir="ltr"] nav .nav-links { flex-direction: row; }
+    .fa { font-family: 'Vazirmatn', 'Inter', -apple-system, sans-serif; }
 
-    .fa { display: none; font-family: 'Vazirmatn', 'Inter', -apple-system, sans-serif; }
+    html[dir="rtl"] body { font-family: 'Vazirmatn', 'Inter', -apple-system, sans-serif; }
+
+    .fa { display: none; }
     .en { display: inline; }
     html[dir="rtl"] .en { display: none; }
     html[dir="rtl"] .fa { display: inline; }
-    html[dir="ltr"] .fa { display: none; font-family: 'Vazirmatn', 'Inter', -apple-system, sans-serif; }
+    html[dir="ltr"] .fa { display: none; }
     html[dir="ltr"] .en { display: inline; }
-
     [data-lang="fa"] .fa { display: inline; }
     [data-lang="fa"] .en { display: none; }
     [data-lang="en"] .en { display: inline; }
-    [data-lang="en"] .fa { display: none; font-family: 'Vazirmatn', 'Inter', -apple-system, sans-serif; }
+    [data-lang="en"] .fa { display: none; }
 
-    /* ΓöÇΓöÇΓöÇ Responsive ΓöÇΓöÇΓöÇ */
     @media (max-width: 768px) {
       nav { padding: 12px 16px; }
       .nav-links { gap: 12px; }
@@ -464,198 +303,192 @@
 </head>
 <body>
 
-  <!-- ΓöÇΓöÇΓöÇ Navbar ΓöÇΓöÇΓöÇ -->
   <nav>
     <a href="#" class="nav-logo">
       <img src="icon.png" alt="RN3X-ui">
       <span>RN3X-ui</span>
     </a>
     <ul class="nav-links">
-      <li><a href="#features" class="fa">┘ê█î┌ÿ┌»█îΓÇî┘ç╪º</a><a href="#features" class="en">Features</a></li>
-      <li><a href="#tech" class="fa">╪¬┌⌐┘å┘ê┘ä┘ê┌ÿ█î</a><a href="#tech" class="en">Tech</a></li>
-      <li><a href="#download" class="fa">╪»╪º┘å┘ä┘ê╪»</a><a href="#download" class="en">Download</a></li>
+      <li><a href="#features" class="fa">ویژگی‌ها</a><a href="#features" class="en">Features</a></li>
+      <li><a href="#tech" class="fa">تکنولوژی</a><a href="#tech" class="en">Tech</a></li>
+      <li><a href="#download" class="fa">دانلود</a><a href="#download" class="en">Download</a></li>
       <li>
-        <button class="lang-toggle" id="langToggle" onclick="toggleLang()">≡ƒç¼≡ƒçº English</button>
+        <button class="lang-toggle" id="langToggle" onclick="toggleLang()">🇬🇧 English</button>
       </li>
     </ul>
   </nav>
 
-  <!-- ΓöÇΓöÇΓöÇ Hero ΓöÇΓöÇΓöÇ -->
   <section class="hero">
-    <span class="hero-badge fa">≡ƒÜÇ ┘å╪│╪«┘ç █▒.█░.█┤ ΓÇö ╪º┘╛┘ä█î┌⌐█î╪┤┘å ┘à┘ê╪¿╪º█î┘ä ╪¿█î┘åΓÇî┘╛┘ä╪¬┘ü╪▒┘à█î</span>
-    <span class="hero-badge en">≡ƒÜÇ v1.0.4 ΓÇö Cross-Platform Mobile App</span>
+    <span class="hero-badge fa">🚀 نسخه ۱.۰.۴ — اپلیکیشن موبایل بین‌پلتفرمی</span>
+    <span class="hero-badge en">🚀 v1.0.4 — Cross-Platform Mobile App</span>
     <img src="icon.png" alt="RN3X-ui Logo" class="hero-icon">
     <h1>RN3X-ui</h1>
     <p class="fa">
-      █î┌⌐ ┌⌐┘ä╪º█î┘å╪¬ ┘à┘ê╪¿╪º█î┘ä ┘à╪»╪▒┘å ┘ê ╪»┘ê ╪▓╪¿╪º┘å┘ç ╪¿╪▒╪º█î ┘à╪»█î╪▒█î╪¬ ┘╛┘å┘äΓÇî┘ç╪º█î ┘╛╪▒┘ê┌⌐╪│█î 3X-UI<br>
-      ╪│╪º╪«╪¬┘ç ╪┤╪»┘ç ╪¿╪º <strong>Expo</strong> ┘ê <strong>React Native</strong>
+      یک کلاینت موبایل مدرن و دو زبانه برای مدیریت پنل‌های پروکسی 3X-UI<br>
+      ساخته شده با <strong>Expo</strong> و <strong>React Native</strong>
     </p>
     <p class="en">
       A modern, bilingual mobile client for managing 3X-UI proxy server panels.<br>
       Built with <strong>Expo</strong> &amp; <strong>React Native</strong>.
     </p>
     <div class="hero-buttons">
-      <a href="#features" class="btn btn-secondary fa">Γ£¿ ┘à╪┤╪º┘ç╪»┘ç ┘ê█î┌ÿ┌»█îΓÇî┘ç╪º</a>
-      <a href="#features" class="btn btn-secondary en">Γ£¿ Explore Features</a>
-      <a href="#download" class="btn btn-primary fa">≡ƒôÑ ╪»╪º┘å┘ä┘ê╪» ╪º┘╛┘ä█î┌⌐█î╪┤┘å</a>
-      <a href="#download" class="btn btn-primary en">≡ƒôÑ Download App</a>
+      <a href="#features" class="btn btn-secondary fa">✨ مشاهده ویژگی‌ها</a>
+      <a href="#features" class="btn btn-secondary en">✨ Explore Features</a>
+      <a href="#download" class="btn btn-primary fa">📥 دانلود اپلیکیشن</a>
+      <a href="#download" class="btn btn-primary en">📥 Download App</a>
     </div>
   </section>
 
-  <!-- ΓöÇΓöÇΓöÇ Features ΓöÇΓöÇΓöÇ -->
   <section id="features">
     <div class="section-header">
-      <h2 class="fa">Γ£¿ ╪º┘à┌⌐╪º┘å╪º╪¬</h2>
-      <h2 class="en">Γ£¿ Features</h2>
-      <p class="fa">┘ç┘à┘ç ┌å█î╪▓ ╪¿╪▒╪º█î ┘à╪»█î╪▒█î╪¬ ┘╛┘å┘ä 3X-UI ╪»╪▒ ┘ç╪▒ ╪▓┘à╪º┘å ┘ê ┘à┌⌐╪º┘å</p>
+      <h2 class="fa">✨ امکانات</h2>
+      <h2 class="en">✨ Features</h2>
+      <p class="fa">همه چیز برای مدیریت پنل 3X-UI در هر زمان و مکان</p>
       <p class="en">Everything you need to manage your 3X-UI panel on the go.</p>
     </div>
     <div class="features-grid">
 
       <div class="feature-card">
-        <div class="feature-icon">≡ƒôè</div>
-        <h3 class="fa">╪»╪º╪┤╪¿┘ê╪▒╪»</h3>
+        <div class="feature-icon">📊</div>
+        <h3 class="fa">داشبورد</h3>
         <h3 class="en">Dashboard</h3>
-        <p class="fa">┘à╪º┘å█î╪¬┘ê╪▒█î┘å┌» ┘ä╪¡╪╕┘çΓÇî╪º█î ╪│╪▒┘ê╪▒ ΓÇö CPU╪î RAM╪î ╪»█î╪│┌⌐╪î Swap╪î ╪ó┘╛╪¬╪º█î┘à╪î ┘ê╪╢╪╣█î╪¬ Xray ┘ê ┘à█î╪º┘å┌»█î┘å ╪¿╪º╪▒</p>
-        <p class="en">Real-time server monitoring ΓÇö CPU, RAM, Disk, Swap, Uptime, Xray status, and average load.</p>
+        <p class="fa">مانیتورینگ لحظه‌ای سرور — CPU، RAM، دیسک، Swap، آپتایم، وضعیت Xray و میانگین بار</p>
+        <p class="en">Real-time server monitoring — CPU, RAM, Disk, Swap, Uptime, Xray status, and average load.</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon">≡ƒôê</div>
-        <h3 class="fa">╪ó┘à╪º╪▒ ╪¬╪▒╪º┘ü█î┌⌐</h3>
+        <div class="feature-icon">📈</div>
+        <h3 class="fa">آمار ترافیک</h3>
         <h3 class="en">Traffic Analytics</h3>
-        <p class="fa">┘å┘à╪º█î╪┤ ╪¬╪▒╪º┘ü█î┌⌐ ╪ó┘╛┘ä┘ê╪»/╪»╪º┘å┘ä┘ê╪» ╪¿╪º ┘å┘à┘ê╪»╪º╪▒┘ç╪º█î ┘╛█î╪┤╪▒┘ü╪¬ ┘ê ╪º╪╣╪»╪º╪» ╪»┘é█î┘é</p>
+        <p class="fa">نمایش ترافیک آپلود/دانلود با نمودارهای پیشرفت و اعداد دقیق</p>
         <p class="en">Upload/download traffic visualization with progress bars and detailed numbers.</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon">≡ƒæÑ</div>
-        <h3 class="fa">┌⌐╪º╪▒╪¿╪▒╪º┘å ╪ó┘å┘ä╪º█î┘å</h3>
+        <div class="feature-icon">👥</div>
+        <h3 class="fa">کاربران آنلاین</h3>
         <h3 class="en">Online Users</h3>
-        <p class="fa">┘à╪┤╪º┘ç╪»┘ç ┌⌐╪º╪▒╪¿╪▒╪º┘å ┘à╪¬╪╡┘ä ╪¿┘ç ╪│╪▒┘ê╪▒ ╪»╪▒ ┘ä╪¡╪╕┘ç</p>
+        <p class="fa">مشاهده کاربران متصل به سرور در لحظه</p>
         <p class="en">See who's connected to your server in real time.</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon">≡ƒæñ</div>
-        <h3 class="fa">┘à╪»█î╪▒█î╪¬ ┌⌐╪º╪▒╪¿╪▒╪º┘å</h3>
+        <div class="feature-icon">👤</div>
+        <h3 class="fa">مدیریت کاربران</h3>
         <h3 class="en">Client Management</h3>
-        <p class="fa">┘ä█î╪│╪¬╪î ╪¼╪│╪¬╪¼┘ê╪î ┘ü█î┘ä╪¬╪▒╪î ╪¡╪░┘ü ┌⌐╪º╪▒╪¿╪▒╪º┘å. ╪▒█î╪│╪¬ ╪¬╪▒╪º┘ü█î┌⌐╪î ┘à╪┤╪º┘ç╪»┘ç ╪¼╪▓╪ª█î╪º╪¬ ┘à╪╡╪▒┘ü ┘ê ╪º╪╖┘ä╪º╪╣╪º╪¬ ┌⌐╪º╪▒╪¿╪▒</p>
+        <p class="fa">لیست، جستجو، فیلتر، حذف کاربران. ریست ترافیک، مشاهده جزئیات مصرف و اطلاعات کاربر</p>
         <p class="en">List, search, filter, delete clients. Reset traffic, view detailed usage and metadata.</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon">≡ƒöù</div>
-        <h3 class="fa">╪¼╪▓╪ª█î╪º╪¬ ┌⌐╪º╪▒╪¿╪▒</h3>
+        <div class="feature-icon">🔗</div>
+        <h3 class="fa">جزئیات کاربر</h3>
         <h3 class="en">Client Details</h3>
-        <p class="fa">╪¬┘ü┌⌐█î┌⌐ ╪¬╪▒╪º┘ü█î┌⌐╪î ╪┤┘å╪º╪│┘ç╪î ┘à╪¡╪»┘ê╪»█î╪¬ IP╪î ╪¬╪º╪▒█î╪« ╪º┘å┘é╪╢╪º╪î Sub ID ┘ê ┘ä█î┘å┌⌐ΓÇî┘ç╪º█î ╪º╪┤╪¬╪▒╪º┌⌐ΓÇî┌»╪░╪º╪▒█î</p>
+        <p class="fa">تفکیک ترافیک، شناسه، محدودیت IP، تاریخ انقضا، Sub ID و لینک‌های اشتراک‌گذاری</p>
         <p class="en">Traffic breakdown, ID, IP limit, expiry, Sub ID, and shareable connection links.</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon">≡ƒîÉ</div>
-        <h3 class="fa">┘à╪»█î╪▒█î╪¬ Inbound┘ç╪º</h3>
+        <div class="feature-icon">🌐</div>
+        <h3 class="fa">مدیریت Inboundها</h3>
         <h3 class="en">Inbound Management</h3>
-        <p class="fa">┘à╪┤╪º┘ç╪»┘ç ╪¬┘à╪º┘à inbound┘ç╪º ╪¿╪º ┘å╪┤╪º┘å ┘╛╪▒┘ê╪¬┌⌐┘ä (VLESS, VMESS, Trojan, Shadowsocks ┘ê ...)╪î ┘ü╪╣╪º┘ä/╪║█î╪▒┘ü╪╣╪º┘ä ┌⌐╪▒╪»┘å╪î ╪¡╪░┘ü</p>
+        <p class="fa">مشاهده تمام inboundها با نشان پروتکل (VLESS, VMESS, Trojan, Shadowsocks و ...)، فعال/غیرفعال کردن، حذف</p>
         <p class="en">View all inbounds with protocol badges. Enable/disable toggle, delete. Supports VLESS, VMESS, Trojan, Shadowsocks & more.</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon">ΓÜÖ∩╕Å</div>
-        <h3 class="fa">╪¬┘å╪╕█î┘à╪º╪¬ ┘╛┘å┘ä</h3>
+        <div class="feature-icon">⚙️</div>
+        <h3 class="fa">تنظیمات پنل</h3>
         <h3 class="en">Panel Settings</h3>
-        <p class="fa">╪º╪╖┘ä╪º╪╣╪º╪¬ ╪º╪¬╪╡╪º┘ä╪î ╪¬┘å╪╕█î┘à╪º╪¬ ┘╛┘å┘ä╪î ╪▒╪º┘çΓÇî╪º┘å╪»╪º╪▓█î ┘à╪¼╪»╪»╪î ╪¬╪║█î█î╪▒ ┘à╪»█î╪▒╪î ┘à╪»█î╪▒█î╪¬ ╪▒╪¿╪º╪¬ ╪¬┘ä┌»╪▒╪º┘à ┘ê ╪¬┘å╪╕█î┘à╪º╪¬ ╪º╪┤╪¬╪▒╪º┌⌐</p>
+        <p class="fa">اطلاعات اتصال، تنظیمات پنل، راه‌اندازی مجدد، تغییر مدیر، مدیریت ربات تلگرام و تنظیمات اشتراک</p>
         <p class="en">Connection info, panel configuration, restart panel, change admin, manage Telegram bot & subscription settings.</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon">≡ƒîì</div>
-        <h3 class="fa">╪»┘ê ╪▓╪¿╪º┘å┘ç</h3>
+        <div class="feature-icon">🌍</div>
+        <h3 class="fa">دو زبانه</h3>
         <h3 class="en">Multi-language</h3>
-        <p class="fa">┘╛╪┤╪¬█î╪¿╪º┘å█î ┌⌐╪º┘à┘ä ╪º╪▓ ┘ü╪º╪▒╪│█î ┘ê ╪º┘å┌»┘ä█î╪│█î ╪¿╪º ╪¬╪║█î█î╪▒ ╪«┘ê╪»┌⌐╪º╪▒ ╪¼┘ç╪¬ RTL/LTR</p>
-        <p class="en">Full support for English and Persian (┘ü╪º╪▒╪│█î) with automatic RTL/LTR switching.</p>
+        <p class="fa">پشتیبانی کامل از فارسی و انگلیسی با تغییر خودکار جهت RTL/LTR</p>
+        <p class="en">Full support for English and Persian (فارسی) with automatic RTL/LTR switching.</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-icon">≡ƒîÖ</div>
-        <h3 class="fa">╪¬┘à ╪¬█î╪▒┘ç</h3>
+        <div class="feature-icon">🌙</div>
+        <h3 class="fa">تم تیره</h3>
         <h3 class="en">Dark Theme</h3>
-        <p class="fa">╪▒╪º╪¿╪╖ ┌⌐╪º╪▒╪¿╪▒█î ╪¬█î╪▒┘ç ┘ê ┘à╪»╪▒┘å ╪¿╪º ╪º┘å█î┘à█î╪┤┘åΓÇî┘ç╪º█î ╪▒┘ê╪º┘å ┘ê ┘╛╪º┘ä╪¬ ╪▒┘å┌»█îτ▓╛σ┐â ╪╖╪▒╪º╪¡█î ╪┤╪»┘ç</p>
+        <p class="fa">رابط کاربری تیره و مدرن با انیمیشن‌های روان و پالت رنگی精心 طراحی شده</p>
         <p class="en">Modern, eye-friendly dark UI with smooth animations and a carefully designed color palette.</p>
       </div>
 
     </div>
   </section>
 
-  <!-- ΓöÇΓöÇΓöÇ Tech Stack ΓöÇΓöÇΓöÇ -->
   <section id="tech">
     <div class="section-header">
-      <h2 class="fa">≡ƒ¢á∩╕Å ╪¬┌⌐┘å┘ê┘ä┘ê┌ÿ█îΓÇî┘ç╪º█î ╪º╪│╪¬┘ü╪º╪»┘ç ╪┤╪»┘ç</h2>
-      <h2 class="en">≡ƒ¢á∩╕Å Tech Stack</h2>
-      <p class="fa">╪│╪º╪«╪¬┘ç ╪┤╪»┘ç ╪¿╪º ╪¬┌⌐┘å┘ê┘ä┘ê┌ÿ█îΓÇî┘ç╪º█î ┘à╪»╪▒┘å ┘ê ┘à╪¡╪¿┘ê╪¿</p>
+      <h2 class="fa">🛠️ تکنولوژی‌های استفاده شده</h2>
+      <h2 class="en">🛠️ Tech Stack</h2>
+      <p class="fa">ساخته شده با تکنولوژی‌های مدرن و محبوب</p>
       <p class="en">Built with modern, battle-tested technologies.</p>
     </div>
     <div class="tech-grid">
       <div class="tech-item">
         <h4>Expo SDK 56</h4>
-        <p class="fa">┘ü╪▒█î┘à┘ê╪▒┌⌐ ╪¿█î┘åΓÇî┘╛┘ä╪¬┘ü╪▒┘à█î</p>
+        <p class="fa">فریمورک بین‌پلتفرمی</p>
         <p class="en">Cross-platform framework</p>
       </div>
       <div class="tech-item">
         <h4>React Native 0.85</h4>
-        <p class="fa">┘ü╪▒█î┘à┘ê╪▒┌⌐ ╪▒╪º╪¿╪╖ ┌⌐╪º╪▒╪¿╪▒█î ┘à┘ê╪¿╪º█î┘ä</p>
+        <p class="fa">فریمورک رابط کاربری موبایل</p>
         <p class="en">Mobile UI framework</p>
       </div>
       <div class="tech-item">
         <h4>React 19</h4>
-        <p class="fa">┌⌐╪¬╪º╪¿╪«╪º┘å┘ç ╪▒╪º╪¿╪╖ ┌⌐╪º╪▒╪¿╪▒█î</p>
+        <p class="fa">کتابخانه رابط کاربری</p>
         <p class="en">UI library</p>
       </div>
       <div class="tech-item">
         <h4>React Navigation 7</h4>
-        <p class="fa">┘å╪º┘ê╪¿╪▒█î Drawer + Stack</p>
+        <p class="fa">ناوبری Drawer + Stack</p>
         <p class="en">Drawer + Stack navigation</p>
       </div>
       <div class="tech-item">
         <h4>Axios</h4>
-        <p class="fa">┌⌐┘ä╪º█î┘å╪¬ HTTP</p>
+        <p class="fa">کلاینت HTTP</p>
         <p class="en">HTTP client</p>
       </div>
       <div class="tech-item">
         <h4>AsyncStorage</h4>
-        <p class="fa">╪░╪«█î╪▒┘çΓÇî╪│╪º╪▓█î ┘à╪¡┘ä█î</p>
+        <p class="fa">ذخیره‌سازی محلی</p>
         <p class="en">Persistent local storage</p>
       </div>
     </div>
   </section>
 
-  <!-- ΓöÇΓöÇΓöÇ Download ΓöÇΓöÇΓöÇ -->
   <section id="download">
     <div class="download-section">
-      <h2 class="fa">≡ƒôÑ ╪»╪º┘å┘ä┘ê╪» RN3X-ui</h2>
-      <h2 class="en">≡ƒôÑ Download RN3X-ui</h2>
-      <p class="fa">╪ó╪«╪▒█î┘å ┘å╪│╪«┘ç ╪▒╪º ╪»╪▒█î╪º┘ü╪¬ ┌⌐┘å█î╪» ┘ê ┘à╪»█î╪▒█î╪¬ ┘╛┘å┘ä 3X-UI ╪«┘ê╪» ╪▒╪º ╪º╪▓ ╪¬┘ä┘ü┘å ┘ç┘à╪▒╪º┘ç ╪«┘ê╪» ╪┤╪▒┘ê╪╣ ┌⌐┘å█î╪».</p>
+      <h2 class="fa">📥 دانلود RN3X-ui</h2>
+      <h2 class="en">📥 Download RN3X-ui</h2>
+      <p class="fa">آخرین نسخه را دریافت کنید و مدیریت پنل 3X-UI خود را از تلفن همراه خود شروع کنید.</p>
       <p class="en">Get the latest version and start managing your 3X-UI panel from your phone.</p>
       <div class="download-options">
         <a href="https://github.com/miladtahanian/RN3X-ui/releases" target="_blank" rel="noopener" class="btn btn-download">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span class="fa">╪»╪º┘å┘ä┘ê╪» ╪ó╪«╪▒█î┘å ┘å╪│╪«┘ç (█▒.█░.█┤)</span>
+          <span class="fa">دانلود آخرین نسخه (۱.۰.۴)</span>
           <span class="en">Download Latest (v1.0.4)</span>
         </a>
       </div>
-      <p class="version-tag fa">≡ƒöù ┘ç┘à┌å┘å█î┘å ┘à█îΓÇî╪¬┘ê╪º┘å█î╪» <a href="https://github.com/miladtahanian/RN3X-ui" target="_blank" rel="noopener">╪│┘ê╪▒╪│ ┌⌐╪» ╪▒╪º ╪»╪▒ ┌»█î╪¬ΓÇî┘ç╪º╪¿ ┘à╪┤╪º┘ç╪»┘ç ┌⌐┘å█î╪»</a></p>
-      <p class="version-tag en">≡ƒöù Alternatively, <a href="https://github.com/miladtahanian/RN3X-ui" target="_blank" rel="noopener">view source on GitHub</a></p>
+      <p class="version-tag fa">🔗 همچنین می‌توانید <a href="https://github.com/miladtahanian/RN3X-ui" target="_blank" rel="noopener">سورس کد را در گیت‌هاب مشاهده کنید</a></p>
+      <p class="version-tag en">🔗 Alternatively, <a href="https://github.com/miladtahanian/RN3X-ui" target="_blank" rel="noopener">view source on GitHub</a></p>
     </div>
   </section>
 
-  <!-- ΓöÇΓöÇΓöÇ Footer ΓöÇΓöÇΓöÇ -->
   <footer>
     <p class="fa">
-      ╪│╪º╪«╪¬┘ç ╪┤╪»┘ç ╪¿╪º Γ¥ñ∩╕Å ╪¿╪▒╪º█î ╪¼╪º┘à╪╣┘ç 3X-UI &bull;
-      <a href="https://github.com/miladtahanian/RN3X-ui" target="_blank" rel="noopener">┌»█î╪¬ΓÇî┘ç╪º╪¿</a>
+      ساخته شده با ❤️ برای جامعه 3X-UI &bull;
+      <a href="https://github.com/miladtahanian/RN3X-ui" target="_blank" rel="noopener">گیت‌هاب</a>
     </p>
     <p class="en">
-      Made with Γ¥ñ∩╕Å for the 3X-UI community &bull;
+      Made with ❤️ for the 3X-UI community &bull;
       <a href="https://github.com/miladtahanian/RN3X-ui" target="_blank" rel="noopener">GitHub</a>
     </p>
   </footer>
@@ -671,13 +504,13 @@
         html.setAttribute('dir', 'ltr');
         html.setAttribute('lang', 'en');
         html.setAttribute('data-lang', 'en');
-        btn.textContent = '≡ƒç«≡ƒç╖ ┘ü╪º╪▒╪│█î';
+        btn.textContent = '🇮🇷 فارسی';
         currentLang = 'en';
       } else {
         html.setAttribute('dir', 'rtl');
         html.setAttribute('lang', 'fa');
         html.setAttribute('data-lang', 'fa');
-        btn.textContent = '≡ƒç¼≡ƒçº English';
+        btn.textContent = '🇬🇧 English';
         currentLang = 'fa';
       }
     }
@@ -692,4 +525,3 @@
   </script>
 </body>
 </html>
-
