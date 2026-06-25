@@ -27,13 +27,13 @@ export const inboundsApi = {
 
   async update(id, inboundData) {
     const api = getApiClient();
-    const response = await api.put(`/panel/api/inbounds/update/${id}`, inboundData);
+    const response = await api.post(`/panel/api/inbounds/update/${id}`, inboundData);
     return response.data;
   },
 
   async delete(id) {
     const api = getApiClient();
-    const response = await api.delete(`/panel/api/inbounds/del/${id}`);
+    const response = await api.post(`/panel/api/inbounds/del/${id}`);
     return response.data;
   },
 

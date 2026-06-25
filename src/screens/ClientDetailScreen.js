@@ -67,30 +67,55 @@ export default function ClientDetailScreen({ route }) {
   const [client, setClient] = useState(initialClient);
   const [links, setLinks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadDetails();
   }, []);
 
   const loadDetails = async () => {
+    setError(null);
     try {
-      const [detailData, linksData] = await Promise.all([
-        clientsApi.get(initialClient.email).catch(() => null),
-        clientsApi.getLinks(initialClient.email).catch(() => ({ success: true, obj: [] })),
+      const results = await Promise.allSettled([
+        clientsApi.get(initialClient.email),
+        clientsApi.getTraffic(initialClient.email),
+        clientsApi.getLinks(initialClient.email),
       ]);
-      if (detailData?.success) setClient(detailData.obj);
-      if (linksData?.success) setLinks(linksData.obj || []);
+
+      const [detailResult, trafficResult, linksResult] = results;
+
+      if (detailResult.status === 'fulfilled' && detailResult.value?.success && detailResult.value.obj) {
+        setClient(prev => ({ ...prev, ...detailResult.value.obj }));
+      }
+
+      if (trafficResult.status === 'fulfilled' && trafficResult.value?.success && trafficResult.value.obj) {
+        setClient(prev => ({ ...prev, traffic: trafficResult.value.obj, total: trafficResult.value.obj.total }));
+      }
+
+      if (linksResult.status === 'fulfilled' && linksResult.value?.success) {
+        setLinks(linksResult.value.obj || []);
+      }
+
+      const allFailed = [detailResult, trafficResult, linksResult].every(
+        r => r.status === 'rejected'
+      );
+      if (allFailed) {
+        const errMsg = detailResult.status === 'rejected'
+          ? (detailResult.reason?.message || t('common.error'))
+          : t('common.error');
+        setError(errMsg);
+      }
     } catch (e) {
       console.log('Detail error:', e);
+      setError(e.message || t('common.error'));
     } finally {
       setLoading(false);
     }
   };
 
-  const up = client.up || 0;
-  const down = client.down || 0;
-  const totalGB = client.totalGB || 0;
-  const totalBytes = totalGB * 1024 * 1024 * 1024;
+  const up = client.traffic?.up || client.up || 0;
+  const down = client.traffic?.down || client.down || 0;
+  const totalBytes = client.total || client.totalGB || 0;
   const usedPercent = totalBytes > 0 ? ((up + down) / totalBytes) * 100 : 0;
   const remaining = totalBytes - (up + down);
   const expired = client.expiryTime && client.expiryTime < Date.now();
@@ -117,6 +142,18 @@ export default function ClientDetailScreen({ route }) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>{t('common.error')}</Text>
+        <Text style={styles.errorDetail}>{error}</Text>
+        <TouchableOpacity style={styles.retryBtn} onPress={() => { setLoading(true); loadDetails(); }} activeOpacity={0.7}>
+          <Text style={styles.retryBtnText}>{t('common.retry')}</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -168,8 +205,8 @@ export default function ClientDetailScreen({ route }) {
       <AnimatedCard delay={200} style={styles.card}>
         <Text style={styles.cardTitle}>{t('clientDetail.userDetails')}</Text>
         <InfoRow label={t('clientDetail.id')} value={client.id?.toString() || '-'} />
-        <InfoRow label={t('clientDetail.limitIp')} value={client.limitIP?.toString() || '\u221E'} />
-        <InfoRow label={t('clientDetail.createDate')} value={formatDate(client.createTime)} />
+        <InfoRow label={t('clientDetail.limitIp')} value={client.limitIp?.toString() ?? client.limitIP?.toString() ?? '\u221E'} />
+        <InfoRow label={t('clientDetail.createDate')} value={formatDate(client.createTime || client.created_at)} />
         <InfoRow
           label={t('clientDetail.expiry')}
           value={formatDate(client.expiryTime)}
@@ -212,6 +249,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.background,
+  },
+  errorText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.error,
+    marginBottom: spacing.sm,
+  },
+  errorDetail: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  retryBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.xl,
+  },
+  retryBtnText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '700',
   },
   headerCard: {
     backgroundColor: colors.card,

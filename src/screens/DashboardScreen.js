@@ -159,7 +159,22 @@ export default function DashboardScreen() {
   }
 
   const cpuVal = status?.cpu != null ? status.cpu.toFixed(2) + '%' : '-';
-  const loadVal = status?.load != null ? status.load.toFixed(2) : '-';
+  const load1 = typeof status?.load === 'object' ? status.load.load1 : status?.load;
+  const loadVal = load1 != null ? load1.toFixed(2) : '-';
+  const xrayRunning = status?.xray?.state === 'running';
+  const xrayVersion = status?.xray?.version || '-';
+  const netUp = status?.netIO?.up || status?.traffic?.upTotal || 0;
+  const netDown = status?.netIO?.down || status?.traffic?.downTotal || 0;
+  const uptimeSecs = status?.uptime || status?.xray?.uptime || 0;
+
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>{t('dashboard.loadError')}</Text>
+        <Text style={styles.errorDetail}>{error}</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -171,9 +186,9 @@ export default function DashboardScreen() {
     >
       <Text style={styles.sectionTitle}>{t('dashboard.serverStatus')}</Text>
       <View style={styles.grid}>
-        <StatCard title={t('dashboard.xrayStatus')} value={status?.xrayStatus ? t('dashboard.running') : t('dashboard.stopped')} color={status?.xrayStatus ? colors.success : colors.error} delay={0} />
-        <StatCard title={t('dashboard.uptime')} value={formatUptime(status?.uptime, t)} color={colors.info} delay={50} />
-        <StatCard title={t('dashboard.version')} value={status?.version || '-'} color={colors.accent} delay={100} />
+        <StatCard title={t('dashboard.xrayStatus')} value={xrayRunning ? t('dashboard.running') : t('dashboard.stopped')} color={xrayRunning ? colors.success : colors.error} delay={0} />
+        <StatCard title={t('dashboard.uptime')} value={formatUptime(uptimeSecs, t)} color={colors.info} delay={50} />
+        <StatCard title={t('dashboard.version')} value={xrayVersion} color={colors.accent} delay={100} />
         <StatCard title={t('dashboard.cpu')} value={cpuVal} color={colors.warning} delay={150} />
         <StatCard title={t('dashboard.ram')} value={formatPercent(status?.mem)} color={colors.info} delay={200} />
         <StatCard title={t('dashboard.swap')} value={formatPercent(status?.swap)} color={colors.textSecondary} delay={250} />
@@ -184,7 +199,7 @@ export default function DashboardScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t('dashboard.trafficStats')}</Text>
         <View style={styles.trafficCard}>
-          <TrafficBar up={status?.traffic?.upTotal || 0} down={status?.traffic?.downTotal || 0} />
+          <TrafficBar up={netUp} down={netDown} />
         </View>
       </View>
 
@@ -213,6 +228,8 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.md, paddingBottom: spacing.xxl },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+  errorText: { fontSize: 16, fontWeight: '700', color: colors.error, marginBottom: spacing.sm },
+  errorDetail: { fontSize: 13, color: colors.textSecondary, textAlign: 'center', paddingHorizontal: spacing.lg },
   section: { marginTop: spacing.lg },
   sectionTitle: { fontSize: 18, fontWeight: '800', color: colors.text, marginBottom: spacing.md },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },

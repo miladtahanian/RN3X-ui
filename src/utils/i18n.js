@@ -31,6 +31,7 @@ const fa = {
     swap: 'Swap',
     disk: 'Disk',
     avgLoad: 'میانگین بار',
+    loadError: 'خطا در دریافت اطلاعات',
     trafficStats: 'آمار ترافیک',
     upTotal: 'آپلود کل',
     downTotal: 'دانلود کل',
@@ -58,6 +59,7 @@ const fa = {
     resetMsg: 'آیا ترافیک {{email}} ریست شود؟',
     reset: 'ریست',
     resetError: 'ریست ترافیک با مشکل مواجه شد',
+    loadError: 'خطا در دریافت کاربران',
     noClients: 'کاربری یافت نشد',
   },
   clientDetail: {
@@ -183,6 +185,7 @@ const en = {
     swap: 'Swap',
     disk: 'Disk',
     avgLoad: 'Avg Load',
+    loadError: 'Failed to load data',
     trafficStats: 'Traffic Stats',
     upTotal: 'Up Total',
     downTotal: 'Down Total',
@@ -210,6 +213,7 @@ const en = {
     resetMsg: 'Reset traffic for {{email}}?',
     reset: 'Reset',
     resetError: 'Failed to reset traffic',
+    loadError: 'Failed to load clients',
     noClients: 'No clients found',
   },
   clientDetail: {

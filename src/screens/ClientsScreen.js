@@ -51,8 +51,8 @@ function ClientCard({ item, onPress, onLongPress, onResetTraffic, index, t, dire
     ]).start();
   }, []);
 
-  const up = item.up || 0;
-  const down = item.down || 0;
+  const up = item.traffic?.up || item.up || 0;
+  const down = item.traffic?.down || item.down || 0;
   const totalGB = item.totalGB || 0;
   const usedGB = totalGB > 0 ? ((up + down) / (totalGB * 1024 * 1024 * 1024)) * 100 : 0;
   const isExpired = item.expiryTime && item.expiryTime < Date.now();
@@ -85,14 +85,14 @@ function ClientCard({ item, onPress, onLongPress, onResetTraffic, index, t, dire
                   <Text style={styles.badgeText}>{t('clients.expired')}</Text>
                 </View>
               )}
-              {item.inboundTags?.slice(0, 2).map((tag, i) => (
+              {(item.inboundTags || item.inboundIds)?.slice(0, 2).map((tag, i) => (
                 <View key={i} style={[styles.badge, styles.badgeTag]}>
                   <Text style={styles.badgeText}>{tag}</Text>
                 </View>
               ))}
-              {(item.inboundTags?.length || 0) > 2 && (
+              {((item.inboundTags || item.inboundIds)?.length || 0) > 2 && (
                 <View style={[styles.badge, styles.badgeMore]}>
-                  <Text style={styles.badgeText}>+{item.inboundTags.length - 2}</Text>
+                  <Text style={styles.badgeText}>+{(item.inboundTags || item.inboundIds).length - 2}</Text>
                 </View>
               )}
             </View>
@@ -135,15 +135,21 @@ export default function ClientsScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
+  const [error, setError] = useState(null);
 
   const fetchClients = async () => {
+    setError(null);
     try {
       const data = await clientsApi.list();
       if (data.success) {
-        setClients(data.obj || []);
+        const list = Array.isArray(data.obj) ? data.obj : data.obj?.clients || [];
+        setClients(list);
+      } else {
+        setError(t('clients.loadError'));
       }
     } catch (e) {
       console.log('Clients fetch error:', e);
+      setError(e.message || t('clients.loadError'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -160,9 +166,10 @@ export default function ClientsScreen({ navigation }) {
   const filteredClients = clients.filter((c) => {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
+    const tags = c.inboundTags || c.inboundIds || [];
     return (
       (c.email || '').toLowerCase().includes(q) ||
-      (c.inboundTags || []).some((t) => t.toLowerCase().includes(q))
+      tags.some((t) => String(t).toLowerCase().includes(q))
     );
   });
 
@@ -225,6 +232,18 @@ export default function ClientsScreen({ navigation }) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>{t('clients.loadError')}</Text>
+        <Text style={styles.errorDetail}>{error}</Text>
+        <TouchableOpacity style={styles.retryBtn} onPress={() => { setLoading(true); fetchClients(); }} activeOpacity={0.7}>
+          <Text style={styles.retryBtnText}>{t('common.retry')}</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -450,6 +469,30 @@ const styles = StyleSheet.create({
   resetBtnText: {
     fontSize: 16,
     color: colors.textMuted,
+  },
+  errorText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.error,
+    marginBottom: spacing.sm,
+  },
+  errorDetail: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  retryBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.xl,
+  },
+  retryBtnText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '700',
   },
   empty: {
     padding: spacing.xxl + 20,

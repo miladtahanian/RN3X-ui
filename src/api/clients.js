@@ -15,7 +15,7 @@ export const clientsApi = {
 
   async get(email) {
     const api = getApiClient();
-    const response = await api.get(`/panel/api/clients/get/${encodeURIComponent(email)}`);
+    const response = await api.post(`/panel/api/clients/get/${encodeURIComponent(email)}`);
     return response.data;
   },
 
@@ -27,13 +27,13 @@ export const clientsApi = {
 
   async update(email, clientData) {
     const api = getApiClient();
-    const response = await api.put(`/panel/api/clients/update/${encodeURIComponent(email)}`, clientData);
+    const response = await api.post(`/panel/api/clients/update/${encodeURIComponent(email)}`, clientData);
     return response.data;
   },
 
   async delete(email) {
     const api = getApiClient();
-    const response = await api.delete(`/panel/api/clients/del/${encodeURIComponent(email)}`);
+    const response = await api.post(`/panel/api/clients/del/${encodeURIComponent(email)}`);
     return response.data;
   },
 
@@ -57,7 +57,7 @@ export const clientsApi = {
 
   async getIps(email) {
     const api = getApiClient();
-    const response = await api.get(`/panel/api/clients/ips/${encodeURIComponent(email)}`);
+    const response = await api.post(`/panel/api/clients/ips/${encodeURIComponent(email)}`);
     return response.data;
   },
 
@@ -69,7 +69,7 @@ export const clientsApi = {
 
   async getActiveInbounds() {
     const api = getApiClient();
-    const response = await api.get('/panel/api/clients/activeInbounds');
+    const response = await api.post('/panel/api/clients/activeInbounds');
     return response.data;
   },
 
@@ -93,13 +93,13 @@ export const clientsApi = {
 
   async getOnlinesByGuid() {
     const api = getApiClient();
-    const response = await api.get('/panel/api/clients/onlinesByGuid');
+    const response = await api.post('/panel/api/clients/onlinesByGuid');
     return response.data;
   },
 
   async getLinks(email) {
     const api = getApiClient();
-    const response = await api.get(`/panel/api/clients/links/${encodeURIComponent(email)}`);
+    const response = await api.post(`/panel/api/clients/links/${encodeURIComponent(email)}`);
     return response.data;
   },
 };
