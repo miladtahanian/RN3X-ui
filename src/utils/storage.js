@@ -5,7 +5,10 @@ const KEYS = {
   SESSION_COOKIE: '@3xui_session_cookie',
   USERNAME: '@3xui_username',
   LANGUAGE: '@3xui_language',
+  ACCOUNTS: '@3xui_accounts',
 };
+
+let accountsCache = null;
 
 export const storage = {
   async saveServerUrl(url) {
@@ -32,7 +35,36 @@ export const storage = {
   async getLanguage() {
     return AsyncStorage.getItem(KEYS.LANGUAGE);
   },
+  async getAccounts() {
+    if (accountsCache) return accountsCache;
+    const raw = await AsyncStorage.getItem(KEYS.ACCOUNTS);
+    const accounts = raw ? JSON.parse(raw) : [];
+    accountsCache = accounts;
+    return accounts;
+  },
+  async saveAccount(account) {
+    const accounts = await this.getAccounts();
+    const idx = accounts.findIndex((a) => a.id === account.id);
+    if (idx >= 0) {
+      accounts[idx] = { ...accounts[idx], ...account };
+    } else {
+      accounts.push(account);
+    }
+    accountsCache = accounts;
+    await AsyncStorage.setItem(KEYS.ACCOUNTS, JSON.stringify(accounts));
+  },
+  async deleteAccount(id) {
+    const accounts = await this.getAccounts();
+    const filtered = accounts.filter((a) => a.id !== id);
+    accountsCache = filtered;
+    await AsyncStorage.setItem(KEYS.ACCOUNTS, JSON.stringify(filtered));
+  },
+  async clearSession() {
+    const { LANGUAGE, ACCOUNTS, ...rest } = KEYS;
+    await AsyncStorage.multiRemove(Object.values(rest));
+  },
   async clearAll() {
+    accountsCache = null;
     const { LANGUAGE, ...rest } = KEYS;
     await AsyncStorage.multiRemove(Object.values(rest));
   },

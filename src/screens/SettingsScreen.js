@@ -14,6 +14,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { settingsApi } from '../api/settings';
@@ -78,7 +79,7 @@ function InfoCard({ children, style }) {
 }
 
 export default function SettingsScreen() {
-  const { username, logout, serverUrl } = useAuth();
+  const { username, logout, serverUrl, accounts, removeAccount, loadAccounts } = useAuth();
   const { t, locale, changeLanguage } = useLanguage();
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -86,6 +87,7 @@ export default function SettingsScreen() {
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [updateInfo, setUpdateInfo] = useState(null);
 
+  const [accountsModal, setAccountsModal] = useState(false);
   const [adminModal, setAdminModal] = useState(false);
   const [adminOldUser, setAdminOldUser] = useState('');
   const [adminOldPass, setAdminOldPass] = useState('');
@@ -335,6 +337,7 @@ export default function SettingsScreen() {
         {settings?.smtpEnable && (
           <ActionButton icon={'\u2709\uFE0F'} label={s('testSmtp')} onPress={handleTestSmtp} />
         )}
+        <ActionButton icon={'\uD83D\uDCC1'} label={t('accounts.manageAccounts')} onPress={() => { loadAccounts(); setAccountsModal(true); }} />
         <ActionButton icon={'\uD83D\uDD11'} label={s('updateAdmin')} onPress={() => setAdminModal(true)} />
       </AnimatedSection>
 
@@ -404,6 +407,56 @@ export default function SettingsScreen() {
         <Text style={styles.footerText}>{t('app.version')}</Text>
         <Text style={styles.footerText}>{t('app.desc')}</Text>
       </AnimatedSection>
+
+      <Modal visible={accountsModal} transparent animationType="fade" onRequestClose={() => setAccountsModal(false)}>
+        <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={[styles.modalContent, { maxHeight: '70%' }]}>
+            <Text style={styles.modalTitle}>
+              <Ionicons name="server-outline" size={18} color={colors.text} /> {t('accounts.manageAccounts')}
+            </Text>
+            {accounts.length === 0 ? (
+              <View style={{ alignItems: 'center', paddingVertical: spacing.lg }}>
+                <Ionicons name="server-outline" size={48} color={colors.textMuted} />
+                <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: spacing.md, textAlign: 'center' }}>
+                  {t('accounts.noAccounts')}
+                </Text>
+              </View>
+            ) : (
+              accounts.map((acc) => (
+                <View key={acc.id} style={styles.settingsAccountRow}>
+                  <View style={styles.settingsAccountInfo}>
+                    <Text style={styles.settingsAccountName} numberOfLines={1}>{acc.name}</Text>
+                    <Text style={styles.settingsAccountDetail} numberOfLines={1}>{acc.username}@{acc.url.replace(/^https?:\/\//, '')}</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.settingsAccountDelete}
+                    onPress={() => {
+                      Alert.alert(t('accounts.deleteTitle'), t('accounts.deleteMsg', { name: acc.name }), [
+                        { text: t('accounts.cancel'), style: 'cancel' },
+                        {
+                          text: t('accounts.confirmDelete'),
+                          style: 'destructive',
+                          onPress: async () => {
+                            await removeAccount(acc.id);
+                          },
+                        },
+                      ]);
+                    }}
+                    activeOpacity={0.6}
+                  >
+                    <Ionicons name="trash-outline" size={18} color={colors.error} />
+                  </TouchableOpacity>
+                </View>
+              ))
+            )}
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setAccountsModal(false)} activeOpacity={0.7}>
+                <Text style={styles.modalCancelText}>{t('common.close')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
 
       <Modal visible={adminModal} transparent animationType="fade" onRequestClose={() => setAdminModal(false)}>
         <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -731,5 +784,33 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 14,
     fontWeight: '700',
+  },
+  settingsAccountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderRadius: 10,
+    padding: spacing.md - 2,
+    marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  settingsAccountInfo: {
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  settingsAccountName: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  settingsAccountDetail: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  settingsAccountDelete: {
+    padding: spacing.sm,
   },
 });

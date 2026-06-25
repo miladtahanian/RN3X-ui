@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, View, Text, StyleSheet } from 'react-native';
+import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -9,6 +9,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { colors } from '../utils/colors';
 
 import LoginScreen from '../screens/LoginScreen';
+import AccountsScreen from '../screens/AccountsScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import ClientsScreen from '../screens/ClientsScreen';
 import ClientDetailScreen from '../screens/ClientDetailScreen';
@@ -17,6 +18,13 @@ import SettingsScreen from '../screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+
+const screenOptions = {
+  headerStyle: { backgroundColor: colors.surface },
+  headerTintColor: colors.text,
+  headerTitleStyle: { fontWeight: '700' },
+  headerShadowVisible: false,
+};
 
 const TAB_ICONS = {
   Dashboard: { focused: 'home', unfocused: 'home-outline' },
@@ -86,6 +94,16 @@ function TabNavigator() {
   );
 }
 
+function AuthStack() {
+  const { t } = useLanguage();
+  return (
+    <Stack.Navigator screenOptions={screenOptions}>
+      <Stack.Screen name="Accounts" component={AccountsScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ title: t('login.loginBtn'), headerBackTitle: t('common.back') }} />
+    </Stack.Navigator>
+  );
+}
+
 export default function AppNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -99,7 +117,7 @@ export default function AppNavigator() {
 
   return (
     <NavigationContainer>
-      {isAuthenticated ? <TabNavigator /> : <LoginScreen />}
+      {isAuthenticated ? <TabNavigator /> : <AuthStack />}
     </NavigationContainer>
   );
 }

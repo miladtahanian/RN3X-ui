@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,26 +11,30 @@ import {
   Alert,
   Animated,
   Dimensions,
+  ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { colors, spacing } from '../utils/colors';
 
 const { width } = Dimensions.get('window');
 
-export default function LoginScreen() {
-  const { login } = useAuth();
+export default function LoginScreen({ navigation }) {
+  const { login, accounts, loadAccounts } = useAuth();
   const { t, direction } = useLanguage();
   const [url, setUrl] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
+  const [loggingInId, setLoggingInId] = useState(null);
 
   const logoScale = useRef(new Animated.Value(0.8)).current;
   const logoOpacity = useRef(new Animated.Value(0)).current;
 
-  React.useEffect(() => {
+  useEffect(() => {
+    loadAccounts();
     Animated.parallel([
       Animated.spring(logoScale, { toValue: 1, friction: 6, tension: 40, useNativeDriver: true }),
       Animated.timing(logoOpacity, { toValue: 1, duration: 600, useNativeDriver: true }),
@@ -50,12 +54,24 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      await login(normalizedUrl, username.trim(), password);
+      await login(normalizedUrl, username.trim(), password, true);
     } catch (error) {
       const message = error.response?.data?.detail || error.response?.data?.msg || error.message || t('login.connError');
       Alert.alert(t('login.error'), message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleQuickLogin = async (account) => {
+    setLoggingInId(account.id);
+    try {
+      await login(account.url, account.username, account.password, false);
+    } catch (error) {
+      const message = error.response?.data?.detail || error.response?.data?.msg || error.message || t('login.connError');
+      Alert.alert(t('login.error'), message);
+    } finally {
+      setLoggingInId(null);
     }
   };
 
@@ -65,6 +81,28 @@ export default function LoginScreen() {
     direction === 'ltr' && { textAlign: 'left' },
   ];
 
+  const AccountItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.quickAccountRow}
+      onPress={() => handleQuickLogin(item)}
+      activeOpacity={0.7}
+      disabled={loggingInId !== null}
+    >
+      <View style={styles.quickAccountIcon}>
+        <Ionicons name="server-outline" size={18} color={colors.primary} />
+      </View>
+      <View style={styles.quickAccountInfo}>
+        <Text style={styles.quickAccountName} numberOfLines={1}>{item.name}</Text>
+        <Text style={styles.quickAccountDetail} numberOfLines={1}>{item.username}</Text>
+      </View>
+      {loggingInId === item.id ? (
+        <ActivityIndicator size="small" color={colors.primary} />
+      ) : (
+        <Ionicons name="log-in-outline" size={18} color={colors.primary} />
+      )}
+    </TouchableOpacity>
+  );
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -72,7 +110,7 @@ export default function LoginScreen() {
     >
       <View style={styles.bgGlow1} />
       <View style={styles.bgGlow2} />
-      <View style={styles.inner}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <Animated.View style={[styles.logoContainer, { opacity: logoOpacity, transform: [{ scale: logoScale }] }]}>
           <View style={styles.logoIcon}>
             <Text style={styles.logoIconText}>3X</Text>
@@ -80,6 +118,26 @@ export default function LoginScreen() {
           <Text style={styles.logoText}>3X-UI</Text>
           <Text style={styles.subtitle}>{t('app.subtitle')}</Text>
         </Animated.View>
+
+        {accounts.length > 0 && (
+          <View style={styles.quickSection}>
+            <Text style={styles.quickSectionTitle}>
+              <Ionicons name="time-outline" size={14} color={colors.textSecondary} /> {t('accounts.quickLogin')}
+            </Text>
+            {accounts.slice(0, 4).map((item) => (
+              <AccountItem key={item.id} item={item} />
+            ))}
+            {accounts.length > 4 && (
+              <TouchableOpacity
+                style={styles.viewAllBtn}
+                onPress={() => navigation.goBack()}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.viewAllText}>{t('accounts.manageAccounts')}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{t('login.serverUrl')}</Text>
@@ -134,7 +192,7 @@ export default function LoginScreen() {
             )}
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -164,10 +222,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accentGlow,
     opacity: 0.4,
   },
-  inner: {
+  scroll: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xl,
   },
   logoContainer: {
     alignItems: 'center',
@@ -267,5 +329,55 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     letterSpacing: 0.5,
+  },
+  quickSection: {
+    marginBottom: spacing.md,
+  },
+  quickSectionTitle: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: spacing.sm,
+  },
+  quickAccountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: spacing.md - 2,
+    marginBottom: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.border,
+    gap: spacing.sm,
+  },
+  quickAccountIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: colors.primaryGlow,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quickAccountInfo: {
+    flex: 1,
+  },
+  quickAccountName: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  quickAccountDetail: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  viewAllBtn: {
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+  },
+  viewAllText: {
+    color: colors.primary,
+    fontSize: 13,
+    fontWeight: '700',
   },
 });
