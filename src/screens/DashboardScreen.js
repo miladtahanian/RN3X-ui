@@ -33,6 +33,7 @@ function safePercent(val) {
   if (typeof val === 'object') {
     if (typeof val.percent === 'number') return val.percent;
     if (typeof val.percent === 'string') return parseFloat(val.percent) || null;
+    if (val.total && val.current != null) return (val.current / val.total) * 100;
     if (val.total && val.used != null) return (val.used / val.total) * 100;
   }
   return null;
@@ -111,21 +112,30 @@ export default function DashboardScreen() {
   const [onlines, setOnlines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
 
   const fetchData = async () => {
-    try {
-      const [statusData, onlinesData] = await Promise.all([
-        serverApi.getStatus(),
-        clientsApi.getOnlines().catch(() => ({ success: true, obj: [] })),
-      ]);
-      if (statusData.success) setStatus(statusData.obj);
-      if (onlinesData.success) setOnlines(onlinesData.obj || []);
-    } catch (e) {
-      console.log('Dashboard error:', e);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+    setError(null);
+    const results = await Promise.allSettled([
+      serverApi.getStatus(),
+      clientsApi.getOnlines().catch(() => ({ success: true, obj: [] })),
+    ]);
+
+    const [statusResult, onlinesResult] = results;
+
+    if (statusResult.status === 'fulfilled' && statusResult.value?.success) {
+      setStatus(statusResult.value.obj);
+    } else if (statusResult.status === 'rejected') {
+      setError(statusResult.reason?.message || t('dashboard.loadError'));
+      console.log('Status error:', statusResult.reason);
     }
+
+    if (onlinesResult.status === 'fulfilled' && onlinesResult.value?.success) {
+      setOnlines(onlinesResult.value.obj || []);
+    }
+
+    setLoading(false);
+    setRefreshing(false);
   };
 
   useFocusEffect(

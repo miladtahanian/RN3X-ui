@@ -1,4 +1,4 @@
-export { createApiClient, getApiClient, setSessionCookie, getBaseURL } from './client';
+export { createApiClient, getApiClient, setSessionCookie, getBaseURL, setOnUnauthorized } from './client';
 export { authApi } from './auth';
 export { serverApi } from './server';
 export { clientsApi } from './clients';

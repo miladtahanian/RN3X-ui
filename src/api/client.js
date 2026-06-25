@@ -3,6 +3,11 @@ import { storage } from '../utils/storage';
 
 let apiClient = null;
 let baseURL = '';
+let onUnauthorized = null;
+
+export const setOnUnauthorized = (callback) => {
+  onUnauthorized = callback;
+};
 
 const parseCookieFromResponse = (response) => {
   const setCookie = response.headers['set-cookie'];
@@ -30,15 +35,19 @@ export const createApiClient = async (url) => {
 
   apiClient.interceptors.response.use(
     (response) => {
-      const cookie = parseCookieFromResponse(response);
-      if (cookie) {
-        storage.saveSession(cookie);
+      const url = response.config?.url || '';
+      if (!url.endsWith('/login')) {
+        const cookie = parseCookieFromResponse(response);
+        if (cookie) {
+          storage.saveSession(cookie);
+        }
       }
       return response;
     },
     (error) => {
       if (error.response?.status === 401) {
         storage.clearAll();
+        if (onUnauthorized) onUnauthorized();
       }
       return Promise.reject(error);
     }

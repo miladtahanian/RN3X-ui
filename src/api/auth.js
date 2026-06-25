@@ -26,6 +26,11 @@ export const authApi = {
       },
     });
 
+    if (response.data && response.data.success === false) {
+      await storage.clearAll();
+      throw new Error(response.data.msg || 'Login failed');
+    }
+
     const setCookie = response.headers['set-cookie'];
     if (setCookie) {
       const cookie = Array.isArray(setCookie) ? setCookie[0] : setCookie;

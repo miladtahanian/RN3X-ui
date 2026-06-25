@@ -51,7 +51,7 @@ export const clientsApi = {
 
   async getOnlines() {
     const api = getApiClient();
-    const response = await api.get('/panel/api/clients/onlines');
+    const response = await api.post('/panel/api/clients/onlines');
     return response.data;
   },
 

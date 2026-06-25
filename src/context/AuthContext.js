@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { createApiClient, setSessionCookie, getApiClient } from '../api/client';
+import { createApiClient, setSessionCookie, setOnUnauthorized } from '../api/client';
 import { authApi } from '../api/auth';
 import { storage } from '../utils/storage';
 
@@ -12,6 +12,10 @@ export function AuthProvider({ children }) {
   const [username, setUsername] = useState('');
 
   useEffect(() => {
+    setOnUnauthorized(() => {
+      setIsAuthenticated(false);
+      setUsername('');
+    });
     initApp();
   }, []);
 
