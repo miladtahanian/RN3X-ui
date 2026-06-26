@@ -15,6 +15,7 @@ import { clientsApi } from '../api/clients';
 import { settingsApi } from '../api/settings';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { storage } from '../utils/storage';
 import { colors, spacing } from '../utils/colors';
 
 const SUB_FIELD_NAMES = ['subUrl', 'subscriptionUrl', 'subLink', 'subscription_link', 'sub_url', 'subURI'];
@@ -77,8 +78,17 @@ export default function ClientDetailScreen({ route }) {
   const [error, setError] = useState(null);
   const [qrVisible, setQrVisible] = useState(false);
   const [qrValue, setQrValue] = useState('');
+  const [subPort, setSubPort] = useState('');
+  const [subPath, setSubPath] = useState('');
 
   useEffect(() => {
+    Promise.all([
+      storage.getSubPort(),
+      storage.getSubPath(),
+    ]).then(([port, path]) => {
+      if (port) setSubPort(port);
+      if (path) setSubPath(path);
+    });
     loadDetails();
   }, []);
 
@@ -151,10 +161,10 @@ export default function ClientDetailScreen({ route }) {
     ? Math.floor((client.expiryTime - Date.now()) / 86400000)
     : null;
 
-  function getServerOrigin(url) {
+  function getServerHost(url) {
     try {
       const u = new URL(url);
-      return u.origin;
+      return `${u.protocol}//${u.hostname}`;
     } catch {
       return url;
     }
@@ -173,7 +183,14 @@ export default function ClientDetailScreen({ route }) {
     if (!client.subId) return '';
 
     const subId = client.subId;
-    const origin = serverUrl ? getServerOrigin(serverUrl) : '';
+    const host = serverUrl ? getServerHost(serverUrl) : '';
+
+    const storedPort = subPort || settings?.subPort;
+    const storedPath = subPath || settings?.subPath || '/sub/';
+    if (storedPort && host) {
+      const path = storedPath.startsWith('/') ? storedPath : `/${storedPath}`;
+      return `${host}:${storedPort}${path}${subId}`;
+    }
 
     const apiSubUrl = settings?._subUrl;
     if (apiSubUrl) return apiSubUrl;
@@ -182,15 +199,10 @@ export default function ClientDetailScreen({ route }) {
     if (subUri) {
       return subUri.startsWith('http')
         ? `${subUri}/${subId}`
-        : `${origin}${subUri}/${subId}`;
+        : `${host}${subUri}/${subId}`;
     }
-    const subPort = settings?.subPort;
-    const subPath = settings?.subPath || '/sub/';
-    if (subPort && origin) {
-      return `${origin}:${subPort}${subPath}${subId}`;
-    }
-    if (origin) {
-      return `${origin}/sub/${subId}`;
+    if (host) {
+      return `${host}/sub/${subId}`;
     }
     return '';
   })();

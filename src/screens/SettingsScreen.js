@@ -20,6 +20,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { settingsApi } from '../api/settings';
 import { serverApi } from '../api/server';
 import { colors, spacing } from '../utils/colors';
+import { storage } from '../utils/storage';
 import { LANGUAGES } from '../utils/i18n';
 
 const APP_VERSION = '1.0.3';
@@ -95,10 +96,24 @@ export default function SettingsScreen() {
   const [adminNewPass, setAdminNewPass] = useState('');
   const [adminUpdating, setAdminUpdating] = useState(false);
   const [showServer, setShowServer] = useState(false);
+  const [subPort, setSubPort] = useState('');
+  const [subPath, setSubPath] = useState('');
 
   useEffect(() => {
     loadSettings();
+    storage.getSubPort().then(val => { if (val) setSubPort(val); });
+    storage.getSubPath().then(val => { if (val) setSubPath(val); });
   }, []);
+
+  const handleSubPortChange = (val) => {
+    setSubPort(val);
+    storage.saveSubPort(val);
+  };
+
+  const handleSubPathChange = (val) => {
+    setSubPath(val);
+    storage.saveSubPath(val);
+  };
 
   const loadSettings = async () => {
     try {
@@ -324,8 +339,41 @@ export default function SettingsScreen() {
               </InfoCard>
             </AnimatedSection>
           )}
+
         </>
       )}
+
+      <AnimatedSection delay={390}>
+        <SectionTitle label={s('subSettings')} />
+        <InfoCard>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>{s('subPort')}</Text>
+            <TextInput
+              style={styles.subInputInline}
+              placeholder="2096"
+              placeholderTextColor={colors.textMuted}
+              value={subPort}
+              onChangeText={handleSubPortChange}
+              keyboardType="number-pad"
+            />
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>{s('subPath')}</Text>
+            <TextInput
+              style={styles.subInputInline}
+              placeholder="/sub/"
+              placeholderTextColor={colors.textMuted}
+              value={subPath}
+              onChangeText={handleSubPathChange}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
+          <Text style={styles.subHint}>
+            {subPort || subPath ? s('subSave') : s('subHint')}
+          </Text>
+        </InfoCard>
+      </AnimatedSection>
 
       <AnimatedSection delay={400}>
         <SectionTitle label={s('operations')} />
@@ -812,5 +860,33 @@ const styles = StyleSheet.create({
   },
   settingsAccountDelete: {
     padding: spacing.sm,
+  },
+  subInput: {
+    backgroundColor: colors.background,
+    borderRadius: 10,
+    padding: spacing.md - 2,
+    color: colors.text,
+    fontSize: 13,
+    borderWidth: 1,
+    borderColor: colors.border,
+    fontFamily: 'monospace',
+  },
+  subInputInline: {
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    color: colors.text,
+    fontSize: 13,
+    borderWidth: 1,
+    borderColor: colors.border,
+    textAlign: 'right',
+    minWidth: 160,
+    fontFamily: 'monospace',
+  },
+  subHint: {
+    color: colors.textMuted,
+    fontSize: 11,
+    marginTop: spacing.xs,
   },
 });
