@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.6] - 2026-06-26
+
+### Added
+- GitHub Releases workflow with automatic build, changelog, and upload
+- ABI split APK builds: separate APKs per architecture (arm64-v8a, armeabi-v7a, x86, x86_64, universal)
+- GitHub Release creation with version tag and changelog body
+- `metro.config.js` with JavaScript minification and optimization
+- `proguard-rules.pro` for code obfuscation rules
+- `scripts/configure-release-build.js` for automated release build setup
+- `scripts/extract-changelog.js` for extracting version changelog
+
+### Changed
+- Enabled **Hermes** JavaScript engine for faster startup and smaller bundle
+- Enabled **ProGuard/R8** code shrinking and obfuscation in release builds
+- Enabled **resource shrinking** to remove unused resources
+- Replaced EAS APK build with optimized native GitHub Actions build
+- Synced app version to `1.0.5` across all config files
+- `babel.config.js` now strips console.log in production builds
+- Development-only dependencies moved to `devDependencies`
+
+### Removed
+- Unused Expo template assets (`partial-react-logo.png`, `react-logo*.png`)
+- `@react-navigation/drawer` dependency (unused)
+
 ## [1.0.5] - 2026-06-26
 
 ### Added
