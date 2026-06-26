@@ -80,6 +80,9 @@ const fa = {
     expiry: 'انقضا',
     subId: 'شناسه اشتراک',
     connectionLinks: 'لینک‌های اتصال',
+    subscriptionLink: 'لینک اشتراک',
+    qrCode: 'QR',
+    close: 'بستن',
     share: 'اشتراک',
   },
   inbounds: {
@@ -305,6 +308,9 @@ const en = {
     expiry: 'Expiry',
     subId: 'Sub ID',
     connectionLinks: 'Connection Links',
+    subscriptionLink: 'Subscription Link',
+    qrCode: 'QR',
+    close: 'Close',
     share: 'Share',
   },
   inbounds: {

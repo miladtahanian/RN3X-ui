@@ -4,6 +4,7 @@ import { Text, TextInput, Platform } from 'react-native';
 import { AuthProvider } from './src/context/AuthContext';
 import { LanguageProvider, useLanguage } from './src/context/LanguageContext';
 import AppNavigator from './src/navigation/AppNavigator';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 function AppContent() {
   const { direction } = useLanguage();
@@ -27,7 +28,9 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AuthProvider>
         <LanguageProvider>
-          <AppContent />
+          <SafeAreaView style={{flex:1}}>
+            <AppContent />
+          </SafeAreaView>
         </LanguageProvider>
       </AuthProvider>
     </GestureHandlerRootView>

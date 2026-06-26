@@ -6,13 +6,18 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
-  Alert,
   Share,
   Animated,
+  Modal,
 } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 import { clientsApi } from '../api/clients';
+import { settingsApi } from '../api/settings';
+import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { colors, spacing } from '../utils/colors';
+
+const SUB_FIELD_NAMES = ['subUrl', 'subscriptionUrl', 'subLink', 'subscription_link', 'sub_url', 'subURI'];
 
 function formatBytes(bytes) {
   if (!bytes || bytes === 0) return '0 B';
@@ -64,10 +69,14 @@ function AnimatedCard({ children, delay = 0, style }) {
 export default function ClientDetailScreen({ route }) {
   const { client: initialClient } = route.params;
   const { t, direction } = useLanguage();
+  const { serverUrl } = useAuth();
   const [client, setClient] = useState(initialClient);
   const [links, setLinks] = useState([]);
+  const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [qrVisible, setQrVisible] = useState(false);
+  const [qrValue, setQrValue] = useState('');
 
   useEffect(() => {
     loadDetails();
@@ -80,9 +89,10 @@ export default function ClientDetailScreen({ route }) {
         clientsApi.get(initialClient.email),
         clientsApi.getTraffic(initialClient.email),
         clientsApi.getLinks(initialClient.email),
+        settingsApi.getAll(),
       ]);
 
-      const [detailResult, trafficResult, linksResult] = results;
+      const [detailResult, trafficResult, linksResult, settingsResult] = results;
 
       if (detailResult.status === 'fulfilled' && detailResult.value?.success && detailResult.value.obj) {
         setClient(prev => ({ ...prev, ...detailResult.value.obj }));
@@ -93,7 +103,25 @@ export default function ClientDetailScreen({ route }) {
       }
 
       if (linksResult.status === 'fulfilled' && linksResult.value?.success) {
-        setLinks(linksResult.value.obj || []);
+        const obj = linksResult.value.obj;
+        if (Array.isArray(obj)) {
+          const subUrl = obj.find(l => l.startsWith('http://') || l.startsWith('https://'));
+          setLinks(obj.filter(l => !l.startsWith('http://') && !l.startsWith('https://')));
+          if (subUrl) setSettings(prev => ({ ...(prev || {}), _subUrl: subUrl }));
+        } else if (obj && typeof obj === 'object') {
+          const found = findSubField(obj, SUB_FIELD_NAMES);
+          if (found) setSettings(prev => ({ ...(prev || {}), _subUrl: found }));
+          setLinks(obj.links || obj.urls || obj.configs || []);
+        } else {
+          setLinks([]);
+        }
+      }
+
+      if (settingsResult.status === 'fulfilled' && settingsResult.value?.success && settingsResult.value.obj) {
+        const s = settingsResult.value.obj;
+        const found = findSubField(s, SUB_FIELD_NAMES);
+        if (found) s._subUrl = found;
+        setSettings(prev => ({ ...(prev || {}), ...s }));
       }
 
       const allFailed = [detailResult, trafficResult, linksResult].every(
@@ -123,12 +151,66 @@ export default function ClientDetailScreen({ route }) {
     ? Math.floor((client.expiryTime - Date.now()) / 86400000)
     : null;
 
+  function getServerOrigin(url) {
+    try {
+      const u = new URL(url);
+      return u.origin;
+    } catch {
+      return url;
+    }
+  }
+
+  function findSubField(obj, fieldNames) {
+    if (!obj) return null;
+    for (const name of fieldNames) {
+      const val = obj[name];
+      if (val && typeof val === 'string' && val.startsWith('http')) return val;
+    }
+    return null;
+  }
+
+  const subscriptionUrl = (() => {
+    if (!client.subId) return '';
+
+    const subId = client.subId;
+    const origin = serverUrl ? getServerOrigin(serverUrl) : '';
+
+    const apiSubUrl = settings?._subUrl;
+    if (apiSubUrl) return apiSubUrl;
+
+    const subUri = (settings?.subURI || '').replace(/\/+$/, '');
+    if (subUri) {
+      return subUri.startsWith('http')
+        ? `${subUri}/${subId}`
+        : `${origin}${subUri}/${subId}`;
+    }
+    const subPort = settings?.subPort;
+    const subPath = settings?.subPath || '/sub/';
+    if (subPort && origin) {
+      return `${origin}:${subPort}${subPath}${subId}`;
+    }
+    if (origin) {
+      return `${origin}/sub/${subId}`;
+    }
+    return '';
+  })();
+
   const handleShareLink = async (link) => {
     try {
       await Share.share({ message: link });
     } catch (e) {
       console.log(e);
     }
+  };
+
+  const handleShowQr = (value) => {
+    setQrValue(value);
+    setQrVisible(true);
+  };
+
+  const handleCloseQr = () => {
+    setQrVisible(false);
+    setQrValue('');
   };
 
   const getStatusText = () => {
@@ -215,22 +297,66 @@ export default function ClientDetailScreen({ route }) {
         {client.subId && <InfoRow label={t('clientDetail.subId')} value={client.subId} />}
       </AnimatedCard>
 
-      {links.length > 0 && (
+      {client.subId && (
         <AnimatedCard delay={300} style={styles.card}>
+          <Text style={styles.cardTitle}>{t('clientDetail.subscriptionLink')}</Text>
+          {subscriptionUrl ? (
+            <View style={styles.linkItem}>
+              <View style={styles.linkIcon}>
+                <Text style={styles.linkIconText}>{'\u21D2'}</Text>
+              </View>
+              <Text style={styles.linkText} numberOfLines={1}>{subscriptionUrl}</Text>
+              <TouchableOpacity style={styles.qrButton} onPress={() => handleShowQr(subscriptionUrl)} activeOpacity={0.7}>
+                <Text style={styles.qrButtonText}>{t('clientDetail.qrCode')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.shareBadge} onPress={() => handleShareLink(subscriptionUrl)} activeOpacity={0.7}>
+                <Text style={styles.shareText}>{t('clientDetail.share')}</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <InfoRow label={t('clientDetail.subId')} value={client.subId} />
+          )}
+        </AnimatedCard>
+      )}
+
+      {links.length > 0 && (
+        <AnimatedCard delay={400} style={styles.card}>
           <Text style={styles.cardTitle}>{t('clientDetail.connectionLinks')}</Text>
           {links.map((link, i) => (
-            <TouchableOpacity key={i} style={styles.linkItem} onPress={() => handleShareLink(link)} activeOpacity={0.7}>
+            <View key={i} style={styles.linkItem}>
               <View style={styles.linkIcon}>
                 <Text style={styles.linkIconText}>{'\u21D2'}</Text>
               </View>
               <Text style={styles.linkText} numberOfLines={1}>{link}</Text>
-              <View style={styles.shareBadge}>
+              <TouchableOpacity style={styles.qrButton} onPress={() => handleShowQr(link)} activeOpacity={0.7}>
+                <Text style={styles.qrButtonText}>{t('clientDetail.qrCode')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.shareBadge} onPress={() => handleShareLink(link)} activeOpacity={0.7}>
                 <Text style={styles.shareText}>{t('clientDetail.share')}</Text>
-              </View>
-            </TouchableOpacity>
+              </TouchableOpacity>
+            </View>
           ))}
         </AnimatedCard>
       )}
+
+      <Modal visible={qrVisible} transparent animationType="fade" onRequestClose={handleCloseQr}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.qrWrapper}>
+              <QRCode value={qrValue} size={220} backgroundColor="white" color="black" />
+            </View>
+            <Text style={styles.modalLinkText} numberOfLines={3}>{qrValue}</Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.modalBtn} onPress={() => { handleShareLink(qrValue); }} activeOpacity={0.7}>
+                <Text style={styles.modalBtnText}>{t('clientDetail.share')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalBtn, styles.modalBtnClose]} onPress={handleCloseQr} activeOpacity={0.7}>
+                <Text style={styles.modalBtnText}>{t('clientDetail.close')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -446,6 +572,18 @@ const styles = StyleSheet.create({
     color: colors.info,
     fontSize: 12,
   },
+  qrButton: {
+    backgroundColor: colors.accent + '25',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginLeft: spacing.sm,
+  },
+  qrButtonText: {
+    color: colors.accent,
+    fontSize: 10,
+    fontWeight: '700',
+  },
   shareBadge: {
     backgroundColor: colors.primary + '25',
     paddingHorizontal: 8,
@@ -456,6 +594,55 @@ const styles = StyleSheet.create({
   shareText: {
     color: colors.primary,
     fontSize: 10,
+    fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: spacing.lg,
+    marginHorizontal: spacing.lg,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  qrWrapper: {
+    padding: spacing.md,
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    marginBottom: spacing.md,
+  },
+  modalLinkText: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+    maxWidth: 260,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  modalBtn: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    paddingVertical: spacing.sm + 2,
+    alignItems: 'center',
+  },
+  modalBtnClose: {
+    backgroundColor: colors.surfaceLight,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  modalBtnText: {
+    color: colors.white,
+    fontSize: 14,
     fontWeight: '700',
   },
 });
