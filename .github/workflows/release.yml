@@ -1,0 +1,71 @@
+name: Build & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to release (e.g., 1.0.5)
+        required: true
+        type: string
+      prerelease:
+        description: Mark as prerelease
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build APKs and Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prebuild for Android
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Configure build for release
+        run: node scripts/configure-release-build.js
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+
+      - name: Build APKs
+        run: cd android && ./gradlew assembleRelease
+
+      - name: Extract changelog
+        run: node scripts/extract-changelog.js ${{ inputs.version }}
+
+      - name: List APK outputs
+        run: ls -la android/app/build/outputs/apk/release/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: v${{ inputs.version }}
+          body_path: release-changelog.md
+          files: android/app/build/outputs/apk/release/*.apk
+          draft: false
+          prerelease: ${{ inputs.prerelease }}

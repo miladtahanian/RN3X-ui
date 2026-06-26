@@ -1,6 +1,6 @@
 {
   "name": "rn3x-ui",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "main": "index.js",
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
