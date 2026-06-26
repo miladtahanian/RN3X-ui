@@ -11,19 +11,16 @@ if (!fs.existsSync(buildGradlePath)) {
 
 let content = fs.readFileSync(buildGradlePath, 'utf8');
 
-if (content.includes('enableSeparateBuildPerCPUArchitecture')) {
-  content = content.replace(
-    /enableSeparateBuildPerCPUArchitecture\s*=\s*(true|false)/,
-    'enableSeparateBuildPerCPUArchitecture = true'
-  );
-}
+content = content.replace(
+  /enableSeparateBuildPerCPUArchitecture\s*=\s*(true|false)/,
+  'enableSeparateBuildPerCPUArchitecture = true'
+);
 
 content = content.replace(
   /versionName\s+"[^"]*"/,
   `versionName "${version}"`
 );
 
-// Generate versionCode from version string (e.g., 1.0.5 -> 10005)
 const parts = version.split('.').map(Number);
 const versionCode = parts[0] * 10000 + (parts[1] || 0) * 100 + (parts[2] || 0);
 content = content.replace(
@@ -64,5 +61,38 @@ if (!content.includes('applicationVariants.all')) {
   }
 }
 
+const releaseBuildTypeMatch = content.match(
+  /release\s*\{[\s\S]*?\n    \}/
+);
+if (releaseBuildTypeMatch) {
+  let releaseBlock = releaseBuildTypeMatch[0];
+  if (!releaseBlock.includes('minifyEnabled')) {
+    releaseBlock = releaseBlock.replace(
+      /(release\s*\{)/,
+      '$1\n            minifyEnabled true\n            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"'
+    );
+    content = content.replace(releaseBuildTypeMatch[0], releaseBlock);
+  }
+}
+
+content = content.replace(
+  /(hermesEnabled\s*=\s*)(true|false)/,
+  '$1true'
+);
+content = content.replace(
+  /(enableHermes:\s*)(true|false)/,
+  '$1true'
+);
+
 fs.writeFileSync(buildGradlePath, content, 'utf8');
 console.log(`Build configured for version ${version} with ABI splits`);
+
+fs.writeFileSync(
+  path.join(__dirname, '..', 'android', 'app', 'proguard-rules.pro'),
+  `-keep class ir.tahanian.rnpanel.** { *; }
+-keep class com.facebook.hermes.** { *; }
+-keep class com.facebook.jni.** { *; }
+`,
+  'utf8'
+);
+console.log('proguard-rules.pro created');

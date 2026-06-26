@@ -52,7 +52,7 @@ jobs:
           RELEASE_VERSION: ${{ inputs.version }}
 
       - name: Build APKs
-        run: cd android && ./gradlew assembleRelease
+        run: cd android && NODE_ENV=production ./gradlew assembleRelease
 
       - name: Extract changelog
         run: node scripts/extract-changelog.js ${{ inputs.version }}

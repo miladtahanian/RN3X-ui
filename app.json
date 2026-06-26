@@ -25,6 +25,22 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "jsEngine": "hermes",
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "extraProguardRules": "-keep class ir.tahanian.rnpanel.** { *; }"
+          },
+          "ios": {
+            "jsEngine": "hermes"
+          }
+        }
+      ]
+    ]
   }
 }
