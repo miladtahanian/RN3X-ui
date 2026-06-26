@@ -4,6 +4,7 @@ import { storage } from '../utils/storage';
 let apiClient = null;
 let baseURL = '';
 let onUnauthorized = null;
+let bearerToken = '';
 
 export const setOnUnauthorized = (callback) => {
   onUnauthorized = callback;
@@ -58,6 +59,12 @@ export const createApiClient = async (url) => {
     apiClient.defaults.headers.Cookie = sessionCookie;
   }
 
+  const savedToken = await storage.getApiToken();
+  if (savedToken) {
+    bearerToken = savedToken;
+    apiClient.defaults.headers.Authorization = `Bearer ${savedToken}`;
+  }
+
   return apiClient;
 };
 
@@ -73,3 +80,16 @@ export const setSessionCookie = (cookie) => {
 };
 
 export const getBaseURL = () => baseURL;
+
+export const setBearerToken = (token) => {
+  bearerToken = token;
+  if (apiClient) {
+    if (token) {
+      apiClient.defaults.headers.Authorization = `Bearer ${token}`;
+    } else {
+      delete apiClient.defaults.headers.Authorization;
+    }
+  }
+};
+
+export const getBearerToken = () => bearerToken;

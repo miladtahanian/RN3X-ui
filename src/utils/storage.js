@@ -8,6 +8,7 @@ const KEYS = {
   ACCOUNTS: '@3xui_accounts',
   SUB_PORT: '@3xui_sub_port',
   SUB_PATH: '@3xui_sub_path',
+  API_TOKEN: '@3xui_api_token',
 };
 
 let accountsCache = null;
@@ -73,13 +74,19 @@ export const storage = {
   async getSubPath() {
     return AsyncStorage.getItem(KEYS.SUB_PATH);
   },
+  async saveApiToken(token) {
+    await AsyncStorage.setItem(KEYS.API_TOKEN, token);
+  },
+  async getApiToken() {
+    return AsyncStorage.getItem(KEYS.API_TOKEN);
+  },
   async clearSession() {
-    const { LANGUAGE, ACCOUNTS, SUB_PORT, SUB_PATH, ...rest } = KEYS;
+    const { LANGUAGE, ACCOUNTS, SUB_PORT, SUB_PATH, API_TOKEN, ...rest } = KEYS;
     await AsyncStorage.multiRemove(Object.values(rest));
   },
   async clearAll() {
     accountsCache = null;
-    const { LANGUAGE, SUB_PORT, SUB_PATH, ...rest } = KEYS;
+    const { LANGUAGE, SUB_PORT, SUB_PATH, API_TOKEN, ...rest } = KEYS;
     await AsyncStorage.multiRemove(Object.values(rest));
   },
 };

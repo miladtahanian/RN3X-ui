@@ -12,6 +12,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { serverApi } from '../api/server';
 import { clientsApi } from '../api/clients';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { colors, spacing } from '../utils/colors';
 
 function formatBytes(bytes) {
@@ -108,8 +109,10 @@ function TrafficBar({ up, down }) {
 
 export default function DashboardScreen() {
   const { t } = useLanguage();
+  const { serverUrl } = useAuth();
   const [status, setStatus] = useState(null);
   const [onlines, setOnlines] = useState([]);
+  const [totalTraffic, setTotalTraffic] = useState({ up: 0, down: 0 });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
@@ -118,10 +121,11 @@ export default function DashboardScreen() {
     setError(null);
     const results = await Promise.allSettled([
       serverApi.getStatus(),
-      clientsApi.getOnlines().catch(() => ({ success: true, obj: [] })),
+      clientsApi.getOnlinesSafe(),
+      clientsApi.list(),
     ]);
 
-    const [statusResult, onlinesResult] = results;
+    const [statusResult, onlinesResult, clientsResult] = results;
 
     if (statusResult.status === 'fulfilled' && statusResult.value?.success) {
       setStatus(statusResult.value.obj);
@@ -130,8 +134,39 @@ export default function DashboardScreen() {
       console.log('Status error:', statusResult.reason);
     }
 
-    if (onlinesResult.status === 'fulfilled' && onlinesResult.value?.success) {
-      setOnlines(onlinesResult.value.obj || []);
+    if (onlinesResult.status === 'fulfilled') {
+      const data = onlinesResult.value;
+      let list = [];
+      if (data) {
+        if (Array.isArray(data)) {
+          list = data;
+        } else if (Array.isArray(data.obj)) {
+          list = data.obj;
+        } else if (data.obj && typeof data.obj === 'object') {
+          if (Array.isArray(data.obj.emails)) list = data.obj.emails;
+          else if (Array.isArray(data.obj.users)) list = data.obj.users;
+          else if (Array.isArray(data.obj.items)) list = data.obj.items;
+          else list = Object.values(data.obj).flat().filter(v => v);
+        } else if (Array.isArray(data.users)) {
+          list = data.users;
+        } else if (Array.isArray(data.emails)) {
+          list = data.emails;
+        }
+      }
+      setOnlines(list.map(item => typeof item === 'object' ? (item.email ?? item.clientEmail ?? '') : item));
+    }
+
+    if (clientsResult.status === 'fulfilled') {
+      const data = clientsResult.value;
+      if (data?.success && Array.isArray(data.obj)) {
+        let totalUp = 0;
+        let totalDown = 0;
+        for (const client of data.obj) {
+          totalUp += client.traffic?.up || client.up || 0;
+          totalDown += client.traffic?.down || client.down || 0;
+        }
+        setTotalTraffic({ up: totalUp, down: totalDown });
+      }
     }
 
     setLoading(false);
@@ -159,13 +194,23 @@ export default function DashboardScreen() {
   }
 
   const cpuVal = status?.cpu != null ? status.cpu.toFixed(2) + '%' : '-';
-  const load1 = typeof status?.load === 'object' ? status.load.load1 : status?.load;
-  const loadVal = load1 != null ? load1.toFixed(2) : '-';
+  const ramPct = safePercent(status?.mem);
+  const diskPct = safePercent(status?.disk);
+  const cpuPct = status?.cpu;
+  const avgLoadVal = (cpuPct != null && ramPct != null && diskPct != null)
+    ? ((cpuPct + ramPct + diskPct) / 3).toFixed(2) + '%'
+    : '-';
+
   const xrayRunning = status?.xray?.state === 'running';
   const xrayVersion = status?.xray?.version || '-';
   const netUp = status?.netIO?.up || status?.traffic?.upTotal || 0;
   const netDown = status?.netIO?.down || status?.traffic?.downTotal || 0;
+  const totalData = netUp + netDown;
+  const clientUp = totalTraffic.up;
+  const clientDown = totalTraffic.down;
   const uptimeSecs = status?.uptime || status?.xray?.uptime || 0;
+
+  const serverHost = serverUrl ? serverUrl.replace(/^https?:\/\//, '').split('/')[0] : '-';
 
   if (error) {
     return (
@@ -193,13 +238,37 @@ export default function DashboardScreen() {
         <StatCard title={t('dashboard.ram')} value={formatPercent(status?.mem)} color={colors.info} delay={200} />
         <StatCard title={t('dashboard.swap')} value={formatPercent(status?.swap)} color={colors.textSecondary} delay={250} />
         <StatCard title={t('dashboard.disk')} value={formatPercent(status?.disk)} color={percentColor(status?.disk)} delay={300} />
-        <StatCard title={t('dashboard.avgLoad')} value={loadVal} color={colors.accent} delay={350} />
+        <StatCard title={t('dashboard.avgLoadTitle')} value={avgLoadVal} color={colors.accent} delay={350} />
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{t('dashboard.trafficStats')}</Text>
         <View style={styles.trafficCard}>
           <TrafficBar up={netUp} down={netDown} />
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('dashboard.totalData')}</Text>
+        <View style={styles.totalDataCard}>
+          <View style={styles.totalDataRow}>
+            <View style={styles.totalDataItem}>
+              <Text style={styles.totalDataArrow}>{'\u2191'}</Text>
+              <Text style={styles.totalDataUp}>{formatBytes(clientUp)}</Text>
+            </View>
+            <View style={styles.totalDataItem}>
+              <Text style={styles.totalDataArrow}>{'\u2193'}</Text>
+              <Text style={styles.totalDataDown}>{formatBytes(clientDown)}</Text>
+            </View>
+          </View>
+          <Text style={styles.totalDataTotal}>{t('dashboard.totalData')}: {formatBytes(clientUp + clientDown)}</Text>
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('dashboard.serverAddress')}</Text>
+        <View style={styles.serverAddrCard}>
+          <Text style={styles.serverAddrValue}>{serverHost}</Text>
         </View>
       </View>
 
@@ -257,6 +326,30 @@ const styles = StyleSheet.create({
   trafficLabels: { flexDirection: 'row', justifyContent: 'space-between' },
   trafficUp: { fontSize: 13, color: colors.success, fontWeight: '600' },
   trafficDown: { fontSize: 13, color: colors.warning, fontWeight: '600' },
+  totalDataCard: {
+    backgroundColor: colors.card, borderRadius: 12, padding: spacing.md,
+    borderWidth: 1, borderColor: colors.border,
+    shadowColor: colors.black, shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2, shadowRadius: 4, elevation: 2,
+  },
+  totalDataRow: {
+    flexDirection: 'row', justifyContent: 'space-around',
+    paddingVertical: spacing.sm,
+  },
+  totalDataItem: { alignItems: 'center', gap: spacing.xs },
+  totalDataArrow: { fontSize: 18 },
+  totalDataUp: { fontSize: 18, fontWeight: '900', color: colors.success },
+  totalDataDown: { fontSize: 18, fontWeight: '900', color: colors.warning },
+  totalDataTotal: {
+    fontSize: 13, color: colors.textSecondary, fontWeight: '600',
+    textAlign: 'center', marginTop: spacing.sm,
+    paddingTop: spacing.sm, borderTopWidth: 1, borderTopColor: colors.border + '50',
+  },
+  serverAddrCard: {
+    backgroundColor: colors.card, borderRadius: 12, padding: spacing.md,
+    alignItems: 'center', borderWidth: 1, borderColor: colors.border,
+  },
+  serverAddrValue: { fontSize: 16, fontWeight: '700', color: colors.text, fontFamily: 'monospace' },
   onlineBox: {
     backgroundColor: colors.card, borderRadius: 12, padding: spacing.lg,
     alignItems: 'center', borderWidth: 1, borderColor: colors.border,

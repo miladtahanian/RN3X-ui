@@ -15,6 +15,11 @@ import ClientsScreen from '../screens/ClientsScreen';
 import ClientDetailScreen from '../screens/ClientDetailScreen';
 import InboundsScreen from '../screens/InboundsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import SettingsPanelScreen from '../screens/SettingsPanelScreen';
+import SettingsSubScreen from '../screens/SettingsSubScreen';
+import SettingsApiScreen from '../screens/SettingsApiScreen';
+import SettingsOperationsScreen from '../screens/SettingsOperationsScreen';
+import SettingsAboutScreen from '../screens/SettingsAboutScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -36,16 +41,23 @@ const TAB_ICONS = {
 function ClientsStackScreen() {
   const { t } = useLanguage();
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: colors.surface },
-        headerTintColor: colors.text,
-        headerTitleStyle: { fontWeight: '700' },
-        headerShadowVisible: false,
-      }}
-    >
+    <Stack.Navigator screenOptions={screenOptions}>
       <Stack.Screen name="ClientsList" component={ClientsScreen} options={{ title: t('nav.clients') }} />
       <Stack.Screen name="ClientDetail" component={ClientDetailScreen} options={{ title: t('nav.clientDetail') }} />
+    </Stack.Navigator>
+  );
+}
+
+function SettingsStackScreen() {
+  const { t } = useLanguage();
+  return (
+    <Stack.Navigator screenOptions={screenOptions}>
+      <Stack.Screen name="SettingsHome" component={SettingsScreen} options={{ title: t('nav.settings') }} />
+      <Stack.Screen name="SettingsPanel" component={SettingsPanelScreen} options={{ title: t('nav.settingsPanel') }} />
+      <Stack.Screen name="SettingsSub" component={SettingsSubScreen} options={{ title: t('nav.settingsSub') }} />
+      <Stack.Screen name="SettingsApi" component={SettingsApiScreen} options={{ title: t('nav.settingsApi') }} />
+      <Stack.Screen name="SettingsOperations" component={SettingsOperationsScreen} options={{ title: t('nav.settingsOperations') }} />
+      <Stack.Screen name="SettingsAbout" component={SettingsAboutScreen} options={{ title: t('nav.settingsAbout') }} />
     </Stack.Navigator>
   );
 }
@@ -89,7 +101,7 @@ function TabNavigator() {
       <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: t('nav.dashboard') }} />
       <Tab.Screen name="Clients" component={ClientsStackScreen} options={{ headerShown: false }} />
       <Tab.Screen name="Inbounds" component={InboundsScreen} options={{ title: t('nav.inbounds') }} />
-      <Tab.Screen name="Settings" component={SettingsScreen} options={{ title: t('nav.settings') }} />
+      <Tab.Screen name="Settings" component={SettingsStackScreen} options={{ headerShown: false }} />
     </Tab.Navigator>
   );
 }

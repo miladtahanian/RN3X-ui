@@ -55,6 +55,22 @@ export const clientsApi = {
     return response.data;
   },
 
+  async getOnlinesSafe() {
+    try {
+      const api = getApiClient();
+      const response = await api.post('/panel/api/clients/onlines');
+      return response.data;
+    } catch {
+      try {
+        const api = getApiClient();
+        const response = await api.post('/panel/api/clients/onlinesByGuid');
+        return response.data;
+      } catch {
+        return { success: true, obj: [] };
+      }
+    }
+  },
+
   async getIps(email) {
     const api = getApiClient();
     const response = await api.post(`/panel/api/clients/ips/${encodeURIComponent(email)}`);
