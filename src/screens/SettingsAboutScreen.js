@@ -9,8 +9,8 @@ import { colors, spacing } from '../utils/colors';
 import {
   AnimatedSection, InfoCard, InfoRow, SectionTitle, ActionButton,
 } from '../components/SettingsComponents';
+import { APP_VERSION } from '../constants';
 
-const APP_VERSION = '1.0.3';
 const GITHUB_REPO = 'miladtahanian/RN3X-ui';
 
 export default function SettingsAboutScreen() {

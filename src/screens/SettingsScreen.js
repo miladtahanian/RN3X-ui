@@ -10,8 +10,7 @@ import { LANGUAGES } from '../utils/i18n';
 import {
   AnimatedSection, InfoCard, InfoRow, SectionTitle, SettingsNavButton,
 } from '../components/SettingsComponents';
-
-const APP_VERSION = '1.0.3';
+import { APP_VERSION } from '../constants';
 
 export default function SettingsScreen() {
   const { t, locale, changeLanguage } = useLanguage();

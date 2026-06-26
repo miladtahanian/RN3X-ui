@@ -1,5 +1,7 @@
+import { APP_VERSION } from '../constants';
+
 const fa = {
-  app: { name: '3X-UI', subtitle: 'پنل مدیریت سنایی', version: '3X-UI Mobile v1.0.0', desc: 'مدیریت پنل RN3X', tagline: 'اپلیکیشن موبایل مدیریت پنل 3X-UI' },
+  app: { name: '3X-UI', subtitle: 'پنل مدیریت سنایی', version: '3X-UI Mobile v' + APP_VERSION, desc: 'مدیریت پنل RN3X', tagline: 'اپلیکیشن موبایل مدیریت پنل 3X-UI' },
   login: {
     serverUrl: 'آدرس سرور',
     serverPlaceholder: 'https://example.com:2053/**************',
@@ -249,7 +251,7 @@ const fa = {
 };
 
 const en = {
-  app: { name: '3X-UI', subtitle: 'Panel Manager', version: '3X-UI Mobile v1.0.0', desc: 'RN3X Panel Manager', tagline: 'Mobile management app for 3X-UI Panel' },
+  app: { name: '3X-UI', subtitle: 'Panel Manager', version: '3X-UI Mobile v' + APP_VERSION, desc: 'RN3X Panel Manager', tagline: 'Mobile management app for 3X-UI Panel' },
   login: {
     serverUrl: 'Server URL',
     serverPlaceholder: 'https://example.com:2053/**************',
